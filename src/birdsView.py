@@ -1,4 +1,5 @@
-import fileHandling
+from src.fileHandling import *
+
 
 def cli():
     option = 0
@@ -15,13 +16,13 @@ def cli():
         if option == 0:
             option = -1
         elif option == 1:
-            print("Bird Added!")
+            addBird("birds.csv")
         elif option == 2:
-            print("Bird Removed!")
+            removeBird("birds.csv")
         elif option == 3:
-            print("Showing Birds!")
+            readAllBirds("birds.csv")
         elif option == 4:
-            print("Which Bird would you like to learn more about? ")
+            readBird("birds.csv")
 
 if __name__ == "__main__":
     cli()
