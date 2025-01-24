@@ -1,0 +1,28 @@
+# Ignore all CSV files
+*.csv
+
+# Ignore common binary files
+*.exe
+*.dll
+*.so
+*.o
+*.out
+*.class
+
+# Ignore log files
+*.log
+
+# Ignore temporary files
+*.tmp
+*.swp
+
+# Ignore IDE/editor-specific files
+.vscode/
+.idea/
+*.iml
+
+# Ignore build directories
+/build/
+/dist/
+/target/
+/out/
