@@ -1,0 +1,18 @@
+genus,mass(g),name,geological location,population size,endangered
+Cyanocitta,100,Blue Jay,North America,"17,000,000",FALSE
+Cardinalis,45,Northern Cardinal,Southeastern Canada and Eastern United States,"110,000,000",FALSE
+Bubo,1400,Horned owl,North America,"3,900,000",FALSE
+Ramphastos,760,Toco Toucan,South America,10000,TRUE
+Sternidae,620,Terns,North America,"3,600,000",TRUE
+Aptenodytes ,23000,Emperor Penguin,Antarctica,"278,500",TRUE
+Falco,1500,Peregrine Falcon,Every Continent but Antartica,"500,000",FALSE
+Branta ,6500,Canada goose,North America,7000000,FALSE
+Apteryx,3000,Kiwi,New Zealand,"68,000",TRUE
+Columba,380,Rock dove,"Europe, North Africa, Asia",120000000,FALSE
+Dromaius,37000,Emu,Australia,"630,000",FALSE
+Bubo,2000,Snowy Owl,North Pole,"200,000",TRUE
+Turdus,77,American robin,North America,370000000,FALSE
+Archilochus,3.1,Ruby-throated hummingbird,North America,350000000,FALSE
+Mimus,51,Northern Mockingbird,"United States, Canada, Mexico, Bahamas, Carribean","45,000,000",FALSE
+Serinus,24,Atlantic Canary,"Canary Islands, Azores, Madeira","5,050,000",FALSE
+Chloebia,12,Gouldian finch,Australia,2500,TRUE
