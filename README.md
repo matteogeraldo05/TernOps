@@ -12,7 +12,7 @@
 ## Pipeline:
  - **Primary Language:** *Java*
  - **Repository:** *GitHub*
- - **Version Control:** *GitHub*
+ - **Version Control:** *Git*
  - **Project Planning Board:** *Trello Workspace*
  - **Database Technology:** *CSV files*
 
