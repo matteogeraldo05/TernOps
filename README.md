@@ -10,7 +10,7 @@
  - **Software Quality Lead:** *Erica Patel*
 
 ## Pipeline:
- - **Primary Language:** *Java*
+ - **Primary Language:** *Python*
  - **Repository:** *GitHub*
  - **Version Control:** *Git*
  - **Project Planning Board:** *Trello Workspace*
