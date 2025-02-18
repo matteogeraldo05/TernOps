@@ -1,28 +1,10 @@
-# Ignore all CSV files
-*.csv
+# Python Bytecode
+__pycache__/
 
-# Ignore common binary files
-*.exe
-*.dll
-*.so
-*.o
-*.out
-*.class
+# Virtual environments
+venv/
+.env/
 
-# Ignore log files
-*.log
-
-# Ignore temporary files
-*.tmp
-*.swp
-
-# Ignore IDE/editor-specific files
+# IDE / Editor files
 .vscode/
 .idea/
-*.iml
-
-# Ignore build directories
-/build/
-/dist/
-/target/
-/out/
