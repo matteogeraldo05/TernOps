@@ -15,20 +15,32 @@ def display_data(file_name):
     print(df)
     return df
 
-def edit_data(file_path, col_to_edit, new_value):
+
+def edit_data(file_path, identifier_col, identifier_value, column_to_edit, new_value):
+
     df = pd.read_csv(file_path)
 
-    mask = df[col_to_edit] == new_value
+    # Check if the column to edit exists
+    mask = df[identifier_col] == identifier_value
 
+    # Check if the entry already exists
     if not mask.any():
-        print(f"Error: No entry found with {col_to_edit} = {new_value}")
+        print(f"Error: No entry found with {identifier_col} = {identifier_value}")
         return
 
-    df.loc[mask, col_to_edit] = new_value
+    # If the entry exists, update the value in the specified column
+    df.loc[mask, column_to_edit] = new_value
 
+    # Save the modified DataFrame back to the CSV file
     df.to_csv(file_path, index=False)
 
-    print(f"Successfully updated {col_to_edit} for {new_value}.")
+    # Print a success message
+    print(f"Successfully updated {column_to_edit} for {identifier_value}.")
+
+
+# Example Usage:
+edit_data("data/celebrities.csv", "first_name", "Bill", "date_of_birth", "October 29, 1955")
+
 
 def add_data(file_path,new_data):
     df = pd.read_csv(file_path)
@@ -49,6 +61,7 @@ def add_data(file_path,new_data):
     # Print a success message
     print(f"Successfully added new entry for {new_data['first_name']} {new_data['last_name']}.")
 
+
 def delete_data(file_path, first_name, last_name):
     df = pd.read_csv(file_path)
 
@@ -68,21 +81,24 @@ def delete_data(file_path, first_name, last_name):
     # Print a success message
     print(f"Successfully deleted the entry for {delete_data['first_name']} {delete_data['last_name']}.")
 
+
 def filter_data(tag):
     return #data which matches the tag
 
 
-# display_data('data/celebrities.csv')
-# edit_data(file_path, column to change, new data)
+# edit_data("data/celebrities.csv", "first_name", "Steve", "date_of_birth", "February 24, 1955")
 
-# new_entry = {
-#     "first_name": "NAME",
-#     "last_name": "LASTNAME",
-#     "date_of_birth": "MONTH DAY, YEAR",
-#     "images_path": "src/Data/Images/FILENAME"
-# }
-#
-# add_data("data/celebrities.csv", new_entry)
+new_entry = {
+    "first_name": "Katy",
+    "last_name": "Perry",
+    "date_of_birth": "October 25, 1984",
+    "images_path": "src/Data/Images/katy_perry.jpg"
+}
+
+add_data("data/celebrities.csv", new_entry)
+
+display_data('data/celebrities.csv')
+
+
 
 # delete_data("data/celebrities.csv", "FIRSTNAME", "LASTNAME")
-
