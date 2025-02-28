@@ -1,2 +1,4 @@
-name,password,isAdmin
-"ryan","password",True
+user_name,password,is_admin
+ryan,password,True
+matteo,password,False
+tomasz,password,True
