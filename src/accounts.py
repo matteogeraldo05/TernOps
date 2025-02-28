@@ -103,43 +103,43 @@ def log_out():
 
 
 # Testing the functions + example usage
-logged_in = False
-current_account = Guest()
+# logged_in = False
+# current_account = Guest()
 
-print("---------------------------------------")
-print(f"1. {logged_in = }\n{current_account.account_info_to_string()}")
-logged_in, current_account = register_user("ryan","password",True,"src\\Data\\accountInfo.csv")
-
-
-print("---------------------------------------")
-print(f"2. {logged_in = }\n{current_account.account_info_to_string()}")
-logged_in, current_account = register_user("matteo","password",False,"src\\Data\\accountInfo.csv")
+# print("---------------------------------------")
+# print(f"1. {logged_in = }\n{current_account.account_info_to_string()}")
+# logged_in, current_account = register_user("ryan","password",True,"src\\Data\\accountInfo.csv")
 
 
-print("---------------------------------------")
-print(f"3. {logged_in = }\n{current_account.account_info_to_string()}")
-logged_in, current_account = register_user("tomasz","password",True,"src\\Data\\accountInfo.csv")
+# print("---------------------------------------")
+# print(f"2. {logged_in = }\n{current_account.account_info_to_string()}")
+# logged_in, current_account = register_user("matteo","password",False,"src\\Data\\accountInfo.csv")
 
 
-print("---------------------------------------")
-print(f"4. {logged_in = }\n{current_account.account_info_to_string()}")
-logged_in, current_account = login("erica","password","src\\Data\\accountInfo.csv")
+# print("---------------------------------------")
+# print(f"3. {logged_in = }\n{current_account.account_info_to_string()}")
+# logged_in, current_account = register_user("tomasz","password",True,"src\\Data\\accountInfo.csv")
 
 
-print("---------------------------------------")
-print(f"5. {logged_in = }\n{current_account.account_info_to_string()}")
-logged_in, current_account = login("ryan","password","src\\Data\\accountInfo.csv")
+# print("---------------------------------------")
+# print(f"4. {logged_in = }\n{current_account.account_info_to_string()}")
+# logged_in, current_account = login("erica","password","src\\Data\\accountInfo.csv")
 
 
-print("---------------------------------------")
-print(f"6. {logged_in = }\n{current_account.account_info_to_string()}")
-logged_in, current_account = login("nolan","password","src\\Data\\accountInfo.csv")
+# print("---------------------------------------")
+# print(f"5. {logged_in = }\n{current_account.account_info_to_string()}")
+# logged_in, current_account = login("ryan","password","src\\Data\\accountInfo.csv")
 
 
-print("---------------------------------------")
-print(f"7. {logged_in = }\n{current_account.account_info_to_string()}")
-logged_in, current_account = log_out()
+# print("---------------------------------------")
+# print(f"6. {logged_in = }\n{current_account.account_info_to_string()}")
+# logged_in, current_account = login("nolan","password","src\\Data\\accountInfo.csv")
 
 
-print("---------------------------------------")
-print(f"8. {logged_in = }\n{current_account.account_info_to_string()}")
+# print("---------------------------------------")
+# print(f"7. {logged_in = }\n{current_account.account_info_to_string()}")
+# logged_in, current_account = log_out()
+
+
+# print("---------------------------------------")
+# print(f"8. {logged_in = }\n{current_account.account_info_to_string()}")
