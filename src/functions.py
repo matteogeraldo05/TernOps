@@ -46,14 +46,14 @@ def add_data(file_path,new_data):
     df = pd.read_csv(file_path)
 
     # Check if the entry already exists
-    mask = (df['first_name'] == new_data['first_name']) & (df['last_name'] == new_data['last_name']) & (df['date_of_birth'] == new_data['date_of_birth']) & (df['file_path'] == new_data['file_path'])
+    mask = (df['first_name'] == new_data['first_name']) & (df['last_name'] == new_data['last_name']) & (df['date_of_birth'] == new_data['date_of_birth']) & (df['images_path'] == new_data['images_path'])
 
     if mask.any():
         print(f"Entry for {new_data['first_name']} {new_data['last_name']} already exists.")
         return
 
     # If the entry doens't exist, add the new row to the DataFrame
-    df = df.append(new_data, ignore_index=True)
+    df = pd.concat([df, pd.DataFrame([new_data])], ignore_index=True)
 
     # Save the modified DataFrame back to the CSV file
     df.to_csv(file_path, index=False)
@@ -68,7 +68,7 @@ def delete_data(file_path, first_name, last_name):
     # Check if the entry already exists
     mask = (df['first_name'] == first_name) & (df['last_name'] == last_name)
 
-    if mask.any():
+    if not mask.any():
         print(f"No entry found for {first_name} {last_name}.")
         return
 
@@ -79,26 +79,66 @@ def delete_data(file_path, first_name, last_name):
     df.to_csv(file_path, index=False)
 
     # Print a success message
-    print(f"Successfully deleted the entry for {delete_data['first_name']} {delete_data['last_name']}.")
+    print(f"Successfully deleted the entry for {first_name} {last_name}.")
 
 
-def filter_data(tag):
-    return #data which matches the tag
-
+# def filter_data(tag):
+#     return #data which matches the tag
 
 # edit_data("data/celebrities.csv", "first_name", "Steve", "date_of_birth", "February 24, 1955")
 
-new_entry = {
-    "first_name": "Katy",
-    "last_name": "Perry",
-    "date_of_birth": "October 25, 1984",
-    "images_path": "src/Data/Images/katy_perry.jpg"
-}
-
-add_data("data/celebrities.csv", new_entry)
-
-display_data('data/celebrities.csv')
-
-
+# new_entry = {
+#     "first_name": "Katy",
+#     "last_name": "Perry",
+#     "date_of_birth": "October 25, 1984",
+#     "images_path": "src/Data/Images/katy_perry.jpg"
+# }
+#
+# add_data("data/celebrities.csv", new_entry)
+#
+# display_data('data/celebrities.csv')
 
 # delete_data("data/celebrities.csv", "FIRSTNAME", "LASTNAME")
+
+
+def menu():
+    file_path = "data/celebrities.csv"
+    while True:
+        print("\nMenu:")
+        print("1. Display Data")
+        print("2. Edit Data")
+        print("3. Add Data")
+        print("4. Delete Data")
+        print("5. Exit")
+
+        choice = input("Enter your choice: ")
+
+        if choice == "1":
+            display_data(file_path)
+        elif choice == "2":
+            identifier_col = input("Enter the identifier column (e.g., first_name): ")
+            identifier_value = input("Enter the identifier value: ")
+            column_to_edit = input("Enter the column to edit: ")
+            new_value = input("Enter the new value: ")
+            edit_data(file_path, identifier_col, identifier_value, column_to_edit, new_value)
+        elif choice == "3":
+            new_entry = {
+                'first_name': input("Enter first name: "),
+                'last_name': input("Enter last name: "),
+                'date_of_birth': input("Enter date of birth: "),
+                'images_path': input("Enter image path: ")
+            }
+            add_data(file_path, new_entry)
+        elif choice == "4":
+            first_name = input("Enter first name to delete: ")
+            last_name = input("Enter last name to delete: ")
+            delete_data(file_path, first_name, last_name)
+        elif choice == "5":
+            print("Exiting...")
+            break
+        else:
+            print("Invalid choice. Please try again.")
+
+
+if __name__ == "__main__":
+    menu()
