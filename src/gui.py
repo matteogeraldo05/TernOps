@@ -1,5 +1,7 @@
 from customtkinter import *
 import accounts
+
+
 app = CTk()
 app.title("Celebrity Bio Application")
 app.geometry("1280x720")
@@ -7,13 +9,13 @@ app.resizable(False, False)
 
 #Frames for diffrent pages
 mainFrame = None
-loginFrame = None
+signInFrame = None
 
 def hideAllFrames():
     if mainFrame:
         mainFrame.place_forget()
-    if loginFrame:
-        loginFrame.place_forget()
+    if signInFrame:
+        signInFrame.place_forget()
 
 # Show the main frame
 def showMainFrame():
@@ -21,30 +23,33 @@ def showMainFrame():
     mainFrame.place(relx=0.5, rely=0.5, anchor="center")
 
 # Show the login frame
-def showLoginFrame():
+def showSignInFrame(signInType):
     hideAllFrames()
-    loginFrame.place(relx=0.5, rely=0.5, anchor="center")
-
-def registerAccount():
-    pass
+    #signInFrame.place(relx=0.5, rely=0.5, anchor="center")
+    createSignInFrame(signInType)
 
 def addCelebrity():
-    pass
+    print("Added celebrity!")
 
 def removeCelebrity():
-    pass
+    print("Removed celebrity!")
 
 def editCelebrity():
-    pass
+    print("Edited celebrity!")
 
 def createMainFrame():
     global mainFrame
     mainFrame = CTkFrame(app, width=1280, height=720)
     mainFrame.place(relx=0.5, rely=0.5, anchor="center")  
+    
+    #User info
+    userLabel = CTkLabel(mainFrame, text="User", font=("Arial", 22))
+    userLabel.place(relx=0.05, rely=0.05, anchor="center")
+
     #Login / Register buttons
-    loginButton = CTkButton(mainFrame, text="Login", command=showLoginFrame, width=60) #keep the same width as the register button
+    loginButton = CTkButton(mainFrame, text="Login", command=lambda: showSignInFrame("Login to Account"), width=60) #keep the same width as the register button
     loginButton.place(relx=0.96, rely=0.05, anchor="center")
-    registerButton = CTkButton(mainFrame, text="Register", command=registerAccount, width=15)
+    registerButton = CTkButton(mainFrame, text="Register", command=lambda: showSignInFrame("Register Account"), width=15)
     registerButton.place(relx=0.91, rely=0.05, anchor="center")
 
     #Celebrity management buttons
@@ -60,34 +65,40 @@ def createMainFrame():
     searchbar.place(relx=0.5, rely=0.05, anchor="center")
 
 
-def createLoginFrame():
+def createSignInFrame(signInType):
     def printToConsole():
-        username = usernameField.get()
-        password = passwordField.get()
-        print(f"Username: {username}, Password: {password}")
-        
-    global loginFrame
-    loginFrame = CTkFrame(app, width=1280, height=720)
-    loginFrame.place(relx=0.5, rely=0.5, anchor="center")  
+        if signInType == "Login to Account":
+            username = usernameField.get()
+            password = passwordField.get()
+            print(f"Username: {username}, Password: {password}")
+        elif signInType == "Register Account":
+            username = usernameField.get()
+            password = passwordField.get()
+            print(f"Registered sername: {username}, Registered Password: {password}")
+        else:
+            print("Invalid sign in type")
+    global signInFrame
+    signInFrame = CTkFrame(app, width=1280, height=720)
+    signInFrame.place(relx=0.5, rely=0.5, anchor="center")  
 
-    loginLabel = CTkLabel(loginFrame, text="Login", font=("Arial", 22))
+    loginLabel = CTkLabel(signInFrame, text=signInType, font=("Arial", 22))
     loginLabel.place(relx=0.5, rely=0.2, anchor="center")
 
     #Username
-    usernameField = CTkEntry(loginFrame, width=500, placeholder_text="Enter your username...")
+    usernameField = CTkEntry(signInFrame, width=500, placeholder_text="Enter your username...")
     usernameField.place(relx=0.5, rely=0.5, anchor="center")
     #Password
-    passwordField = CTkEntry(loginFrame, width=500, placeholder_text="Enter your password...", show="*")
+    passwordField = CTkEntry(signInFrame, width=500, placeholder_text="Enter your password...", show="*")
     passwordField.place(relx=0.5, rely=0.6, anchor="center")
     #Submit
-    submitButton = CTkButton(loginFrame, text="Login", command=printToConsole, width=80, font=("Arial", 16))
+    submitButton = CTkButton(signInFrame, text=signInType, command=printToConsole, width=80, font=("Arial", 16))
     submitButton.place(relx=0.5, rely=0.8, anchor="center")
 
     #go back to main menu
-    backButton = CTkButton(loginFrame, text="home", command=showMainFrame, width=60)
+    backButton = CTkButton(signInFrame, text="home", command=showMainFrame, width=60)
     backButton.place(relx=0.1, rely=0.05, anchor="center")
 
-createLoginFrame()
+
 createMainFrame()
 
 showMainFrame()
