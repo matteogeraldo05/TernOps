@@ -22,4 +22,3 @@
 Our name comes from the word **Tern**, A bird, known for its agility,
 which refers to our teams ability to quickly respond to evolving
 requirements and deliver quality work within tight time confinements.
-
