@@ -56,12 +56,12 @@ def register_user(user_name, password, is_admin, file_path):
             writer.writerow(user_info) # Append the new account information to the file.
             account_file.close()
 
-            print(f"Account successfully created! You are now logged in.\nWelcome {user_name}!")
+            #print(f"Account successfully created! You are now logged in.\nWelcome {user_name}!")
             current_account = Account(user_name,password,is_admin) # Create a new Account object with the users data
-            return True, current_account
+            return True, current_account, "Registered"
     else:
-        print(f"Sorry, the username {user_name} is already taken, Please try again.")
-        return False, Guest()
+        #print(f"Sorry, the username {user_name} is already taken, Please try again.")
+        return False, Guest(), f"Sorry, the username {user_name} is already taken, Please try again."
 
 
 
@@ -74,35 +74,35 @@ def login(user_name, password, file_path):
         user_data = accounts_df[accounts_df["user_name"] == user_name]
 
         if user_data.empty:
-            print(f"No account found for the username {user_name}.")
-            return False, Guest()
+            #print(f"No account found for the username {user_name}.")
+            return False, Guest(), f"No account found for the username {user_name}."
         
         user_data = user_data.iloc[0]
         
         # Verify the user's password
         if user_data.iloc[1] == password:
-            print(f"Login successful!\nWelcome {user_name}!")
+            #print(f"Login successful!\nWelcome {user_name}!")
             current_account = Account(user_data["user_name"],user_data["password"],user_data["is_admin"]) # Create a new Account object with the users data
-            return True, current_account
+            return True, current_account, "Logged In."
         else:
-            print("Incorrect password.")
-            return False, Guest()
+            #print("Incorrect password.")
+            return False, Guest(), "Incorrect password."
 
     except Exception as e:
-        print("An error occurred...")
+        #print("An error occurred...")
         print(e)
-        return False, Guest()
+        return False, Guest(), f"{e} error occurred..."
 
 
 
 # Function to log user out of the program.
 def log_out():
-    print("Successfully logged out.")
-    return False, Guest()
+    #print("Successfully logged out.")
+    return False, Guest(), "Successfully logged out."
 
 
 
-# Testing the functions + example usage
+#Testing the functions + example usage
 # logged_in = False
 # current_account = Guest()
 
