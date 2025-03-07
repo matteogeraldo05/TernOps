@@ -5,6 +5,7 @@ import numpy as np
 import pandas as pd
 import datetime
 import os
+import shutil
 
 def display_data(file_name):
     if not os.path.exists(file_name):
@@ -39,7 +40,7 @@ def edit_data(file_path, identifier_col, identifier_value, column_to_edit, new_v
 
 
 # Example Usage:
-edit_data("data/celebrities.csv", "first_name", "Bill", "date_of_birth", "October 29, 1955")
+edit_data("src/data/celebrities.csv", "first_name", "Bill", "date_of_birth", "October 29, 1955")
 
 
 def add_data(file_path,new_data):
@@ -72,15 +73,56 @@ def delete_data(file_path, first_name, last_name):
         print(f"No entry found for {first_name} {last_name}.")
         return
 
+    # Get where the images are
+    images_path = df.loc[mask, 'images_path'].values[0]
+    
     # If the entry does exist, remove the row from the DataFrame
     df = df[~mask]
 
     # Save the modified DataFrame back to the CSV file
     df.to_csv(file_path, index=False)
 
+   # Check if the path is a file or folder
+    if os.path.exists(images_path):
+        if os.path.isdir(images_path):
+            # If it's a directory remove it
+            try:
+                shutil.rmtree(images_path)
+                print(f"Successfully deleted image folder: {images_path}")
+            except Exception as e:
+                print(f"Error deleting image folder: {e}")
+        elif os.path.isfile(images_path):
+            # If it's a file remove it
+            try:
+                os.remove(images_path)
+                print(f"Successfully deleted image file: {images_path}")
+            except Exception as e:
+                print(f"Error deleting image file: {e}")
+
     # Print a success message
     print(f"Successfully deleted the entry for {first_name} {last_name}.")
 
+#@ Added some functions to ease GUI development
+def copy_image_to_folder(image_path, celebrity_name):
+    # Create new folder if it doesn't exist
+    newpath = r"src\\Data\\Images\\" + celebrity_name 
+    if not os.path.exists(newpath):
+        os.makedirs(newpath) 
+
+    #grab the filename
+    image_filename = os.path.basename(image_path)
+
+    # Copy the image to the new folder
+    shutil.copy(image_path, newpath)
+    print(f"Image: {image_path} copied to {newpath}")
+    return newpath +"\\"+ image_filename
+
+def load_celebrities_file(csv_file):
+    # Load celebrities directly from the CSV into a DataFrame
+    df = pd.read_csv(csv_file, usecols=['first_name', 'last_name', 'date_of_birth', 'images_path'])
+    # Convert the DataFrame to a list of dictionaries
+    celebrities = df.to_dict(orient='records')
+    return celebrities
 
 # def filter_data(tag):
 #     return #data which matches the tag

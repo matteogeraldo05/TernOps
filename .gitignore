@@ -8,3 +8,7 @@ venv/
 # IDE / Editor files
 .vscode/
 .idea/
+
+*.png
+*.jpg
+*.jpeg    
