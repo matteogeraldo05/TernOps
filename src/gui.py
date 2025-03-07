@@ -1,6 +1,6 @@
 from customtkinter import *
-from PIL import Image
 import accounts
+import functions
 
 
 app = CTk()
@@ -44,6 +44,11 @@ def showEditCelebrityFrame():
     createEditCelebrityFrame()
 
 def createMainFrame():
+    def logoutAndShowMain():
+        global userAccount
+        userAccount = accounts.Guest() #todo
+        showMainFrame()
+
     global mainFrame, userAccount
 
     # Frame to house all elements
@@ -60,27 +65,65 @@ def createMainFrame():
     #profilePicture = CTkImage(dark_image=Image.open("src\\Data\\Images\\user\\default.png"), size=(30,30))
     #profilePictureLabel = CTkLabel(mainFrame, image=profilePicture)
 
-    # Login / Register buttons
-    loginButton = CTkButton(topFrame, text="Login", command=lambda: showSignInFrame("Login to Account"), width=60) #keep the same width as the register button
-    loginButton.pack(side="right", padx=15)
-    registerButton = CTkButton(topFrame, text="Register", command=lambda: showSignInFrame("Register Account"), width=15)
-    registerButton.pack(side="right")
+    if userAccount.get_user_name() == "Guest":
+        # Login / Register buttons
+        loginButton = CTkButton(topFrame, text="Login", command=lambda: showSignInFrame("Login to Account"), width=60)
+        loginButton.pack(side="right", padx=15)
+        registerButton = CTkButton(topFrame, text="Register", command=lambda: showSignInFrame("Register Account"), width=60)
+        registerButton.pack(side="right")
+    else:
+        # Logout button
+        logoutButton = CTkButton(topFrame, text="Logout", command=logoutAndShowMain, width=60) 
+        logoutButton.pack(side="right", padx=15)
+
+
+    # Add Celebrity
+    addButton = CTkButton(topFrame, text="Add", command=lambda: createEditCelebrityFrame("Add"), width=60)
+    addButton.pack(side="right", padx=90)
 
     # Searchbar
     searchbar = CTkEntry(topFrame, width=500, placeholder_text="Search for a celebrity")
-    searchbar.pack(side="top", pady=10)
+    searchbar.pack(side="right", pady=20)
 
     # Scrollable frame to house list of celebrities
     scrollFrame = CTkScrollableFrame(mainFrame, width=1280, height=660)
     scrollFrame.pack(fill="both")
     
-    #Celebrity management buttons
-    addButton = CTkButton(scrollFrame, text="Add", command=None, width=60)
-    addButton.pack(side="left", padx=10)
-    removeButton = CTkButton(scrollFrame, text="Remove", command=None, width=60)
-    removeButton.pack(side="left", padx=10)
-    editButton = CTkButton(scrollFrame, text="Edit", command=None, width=60)
-    editButton.pack(side="left", padx=10)
+    
+    # removeButton = CTkButton(scrollFrame, text="Remove", command=None, width=60)
+    # removeButton.pack(side="left", padx=10)
+    # editButton = CTkButton(scrollFrame, text="Edit", command=None, width=60)
+    # editButton.pack(side="left", padx=10)
+
+    # Load the celebrities from CSV file
+    celebrities = functions.load_celebrities("src/Data/celebrities.csv")
+
+    # Create a row for each celebrity in the CSV file
+    for celebrity in celebrities:
+        celebrityData = functions.create_celebrity_row(celebrity)
+        
+        # Create the row using the celebrity data
+        rowFrame = CTkFrame(scrollFrame, width=1280, height=100)
+        rowFrame.pack(fill="x", pady=5)
+
+        # Image
+        imageLabel = CTkLabel(rowFrame, image=celebrityData['image'], text="")
+        imageLabel.pack(side="left", padx=20)
+
+        # Name and DOB
+        nameAndDOBLabel = CTkLabel(rowFrame, text=f"{celebrityData['name']} - {celebrityData['dob']}", font=("Arial", 16))
+        nameAndDOBLabel.pack(side="left", padx=20)
+        
+        # Celebrity management buttons
+        editButton = CTkButton(rowFrame, text="Edit", command=None, width=60)
+        editButton.pack(side="right", padx=10)
+
+        removeButton = CTkButton(rowFrame, text="Remove", command=None, width=60)
+        removeButton.pack(side="right", padx=10)
+
+        # Favorite button
+        favoriteButton = CTkButton(rowFrame, text="♡", command=None, width=60)
+        favoriteButton.pack(side="right", padx=10)
 
 def createSignInFrame(signInType):
     def printToConsole():
@@ -94,6 +137,7 @@ def createSignInFrame(signInType):
             successfulRegister, newUserAccount, successText = accounts.register_user(username, password, False, "src\\Data\\accountInfo.csv")
         else:
             print("Invalid sign in type")
+            #todo make error message redd and success message green
             
         if successfulRegister:
             userAccount = newUserAccount
@@ -126,17 +170,66 @@ def createSignInFrame(signInType):
     backButton.place(relx=0.05, rely=0.05, anchor="center")
 
 def createEditCelebrityFrame(editType):
+    global localImagePath
+
+    def getImagePath():
+        global localImagePath
+        filePath = filedialog.askopenfilename(title="Select an Image", filetypes=[("Image Files", "*.jpg;*.jpeg;*.png;")])
+        filePathLabel = CTkLabel(editCelebrityFrame, text=f"Image: {filePath}", font=("Arial", 16))
+        filePathLabel.place(relx=0.5, rely=0.6, anchor="center")
+        celebrityName = firstNameField.get() + "_" + lastNameField.get()
+        localImagePath = functions.copy_image_to_folder(filePath, celebrityName)
+
+    def addCelebrity():
+        firstName = firstNameField.get()
+        lastName = lastNameField.get()
+        dateOfBirth = dobField.get()
+        imagePath = localImagePath
+
+        celebrityData = {
+            'first_name': firstName,
+            'last_name': lastName,
+            'date_of_birth': dateOfBirth,
+            'images_path': imagePath
+        }
+
+        # Add the celebrity to the CSV
+        functions.add_data("src/Data/celebrities.csv", celebrityData)
+
+        # Show success message
+        successMessage = CTkLabel(editCelebrityFrame, text=f"Successfully added {firstName} {lastName}!", font=("Arial", 16))
+        successMessage.place(relx=0.5, rely=0.75, anchor="center")
+        app.after(2000, showMainFrame)
+
+
     global editCelebrityFrame
     
     editCelebrityFrame = CTkFrame(app, width=1280, height=720)
     editCelebrityFrame.place(relx=0.5, rely=0.5, anchor="center")
-
     
-    submitButton = CTkButton(signInFrame, text=editType, command=None, width=80, font=("Arial", 16))
+    # Add a label to inform the user of the action
+    editLabel = CTkLabel(editCelebrityFrame, text=f"Please fill in the details to {editType} a celebrity", font=("Arial", 22))
+    editLabel.place(relx=0.5, rely=0.1, anchor="center")
+
+    # Fields for first name, last name, date of birth, and image path
+    firstNameField = CTkEntry(editCelebrityFrame, width=500, placeholder_text="Enter First Name")
+    firstNameField.place(relx=0.5, rely=0.3, anchor="center")
+
+    lastNameField = CTkEntry(editCelebrityFrame, width=500, placeholder_text="Enter Last Name")
+    lastNameField.place(relx=0.5, rely=0.4, anchor="center")
+
+    dobField = CTkEntry(editCelebrityFrame, width=500, placeholder_text="Enter Date of Birth (ex. October 29, 1955)")
+    dobField.place(relx=0.5, rely=0.5, anchor="center")
+
+    imageSelectButton = CTkButton(editCelebrityFrame, width=100, text="Select Image", command=getImagePath)
+    imageSelectButton.place(relx=0.5, rely=0.7, anchor="center")
+
+    # Submit button to add celebrity
+    submitButton = CTkButton(editCelebrityFrame, text="Add Celebrity", command=addCelebrity, width=100, font=("Arial", 16))
     submitButton.place(relx=0.5, rely=0.8, anchor="center")
 
-    #go back to main menu
-    backButton = CTkButton(signInFrame, text="home", command=showMainFrame, width=60)
+    # Go back to main menu
+    backButton = CTkButton(editCelebrityFrame, text="Home", command=showMainFrame, width=60)
     backButton.place(relx=0.05, rely=0.05, anchor="center")
 
 createMainFrame()
