@@ -14,6 +14,7 @@ userAccount = accounts.Guest()
 #Frames for diffrent pages
 mainFrame = None
 signInFrame = None
+editCelebrityFrame = None
 favoritesFrame = None
 
 # Hide all frames
@@ -21,9 +22,11 @@ def hideAllFrames():
     if mainFrame:
         mainFrame.pack_forget()
     if signInFrame:
-        signInFrame.pack_forget()
+        signInFrame.place_forget()
     if favoritesFrame:
         favoritesFrame.pack_forget()
+    if editCelebrityFrame:
+        editCelebrityFrame.pack_forget()
 
 # Show the main frame
 def showMainFrame():
@@ -35,6 +38,10 @@ def showMainFrame():
 def showSignInFrame(signInType):
     hideAllFrames()
     createSignInFrame(signInType)
+
+def showEditCelebrityFrame():
+    hideAllFrames()
+    createEditCelebrityFrame()
 
 def createMainFrame():
     global mainFrame, userAccount
@@ -118,6 +125,19 @@ def createSignInFrame(signInType):
     backButton = CTkButton(signInFrame, text="home", command=showMainFrame, width=60)
     backButton.place(relx=0.05, rely=0.05, anchor="center")
 
+def createEditCelebrityFrame(editType):
+    global editCelebrityFrame
+    
+    editCelebrityFrame = CTkFrame(app, width=1280, height=720)
+    editCelebrityFrame.place(relx=0.5, rely=0.5, anchor="center")
+
+    
+    submitButton = CTkButton(signInFrame, text=editType, command=None, width=80, font=("Arial", 16))
+    submitButton.place(relx=0.5, rely=0.8, anchor="center")
+
+    #go back to main menu
+    backButton = CTkButton(signInFrame, text="home", command=showMainFrame, width=60)
+    backButton.place(relx=0.05, rely=0.05, anchor="center")
 
 createMainFrame()
 
