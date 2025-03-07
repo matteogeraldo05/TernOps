@@ -6,8 +6,6 @@ import pandas as pd
 import datetime
 import os
 import shutil
-from tkinter import PhotoImage
-from PIL import Image, ImageTk
 
 def display_data(file_name):
     if not os.path.exists(file_name):
@@ -75,16 +73,36 @@ def delete_data(file_path, first_name, last_name):
         print(f"No entry found for {first_name} {last_name}.")
         return
 
+    # Get where the images are
+    images_path = df.loc[mask, 'images_path'].values[0]
+    
     # If the entry does exist, remove the row from the DataFrame
     df = df[~mask]
 
     # Save the modified DataFrame back to the CSV file
     df.to_csv(file_path, index=False)
 
+   # Check if the path is a file or folder
+    if os.path.exists(images_path):
+        if os.path.isdir(images_path):
+            # If it's a directory remove it
+            try:
+                shutil.rmtree(images_path)
+                print(f"Successfully deleted image folder: {images_path}")
+            except Exception as e:
+                print(f"Error deleting image folder: {e}")
+        elif os.path.isfile(images_path):
+            # If it's a file remove it
+            try:
+                os.remove(images_path)
+                print(f"Successfully deleted image file: {images_path}")
+            except Exception as e:
+                print(f"Error deleting image file: {e}")
+
     # Print a success message
     print(f"Successfully deleted the entry for {first_name} {last_name}.")
 
-#@ Added missing functions
+#@ Added some functions to ease GUI development
 def copy_image_to_folder(image_path, celebrity_name):
     # Create new folder if it doesn't exist
     newpath = r"src\\Data\\Images\\" + celebrity_name 
@@ -99,39 +117,12 @@ def copy_image_to_folder(image_path, celebrity_name):
     print(f"Image: {image_path} copied to {newpath}")
     return newpath +"\\"+ image_filename
 
-def load_celebrities(csv_file):
-    #Load celebrities from the CSV file.
-    celebrities = []
-    with open(csv_file, newline='', encoding='utf-8') as file:
-        reader = csv.DictReader(file)
-        for row in reader:
-            celebrities.append({
-                'first_name': row['first_name'],
-                'last_name': row['last_name'],
-                'date_of_birth': row['date_of_birth'],
-                'images_path': row['images_path']
-            })
+def load_celebrities_file(csv_file):
+    # Load celebrities directly from the CSV into a DataFrame
+    df = pd.read_csv(csv_file, usecols=['first_name', 'last_name', 'date_of_birth', 'images_path'])
+    # Convert the DataFrame to a list of dictionaries
+    celebrities = df.to_dict(orient='records')
     return celebrities
-
-def create_celebrity_row(celebrity):
-    try:
-        # Open the image using PIL
-        img = Image.open(celebrity['images_path'])
-        
-        # Resize the image to a 100x100
-        img = img.resize((100, 100)) 
-        
-        # Convert the PIL image to ImageTk so i can use it in the CTkLabel
-        img_tk = ImageTk.PhotoImage(img)
-    except Exception as e:
-        img_tk = None  # In case an error occurs
-    
-    # Return the data that can be used to create the GUI row
-    return {
-        'image': img_tk,
-        'name': f"{celebrity['first_name']} {celebrity['last_name']}",
-        'dob': celebrity['date_of_birth']
-    }
 
 # def filter_data(tag):
 #     return #data which matches the tag

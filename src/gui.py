@@ -1,4 +1,5 @@
 from customtkinter import *
+from CTkMessagebox import CTkMessagebox
 import accounts
 import functions
 
@@ -48,6 +49,14 @@ def createMainFrame():
         global userAccount
         userAccount = accounts.Guest() #todo
         showMainFrame()
+    
+    def removeCelebrity(firstName, lastName):
+        deleteCeleb = CTkMessagebox(message=f"Are you sure you would like to delete {firstName} {lastName}? This action is permenant.", icon="warning", option_1="Yes", option_2="No")
+        if deleteCeleb.get() == "Yes":
+            functions.delete_data("src\\Data\\celebrities.csv", firstName, lastName)
+            showMainFrame()
+        else:
+            pass
 
     global mainFrame, userAccount
 
@@ -88,64 +97,59 @@ def createMainFrame():
     # Scrollable frame to house list of celebrities
     scrollFrame = CTkScrollableFrame(mainFrame, width=1280, height=660)
     scrollFrame.pack(fill="both")
-    
-    
-    # removeButton = CTkButton(scrollFrame, text="Remove", command=None, width=60)
-    # removeButton.pack(side="left", padx=10)
-    # editButton = CTkButton(scrollFrame, text="Edit", command=None, width=60)
-    # editButton.pack(side="left", padx=10)
 
     # Load the celebrities from CSV file
-    celebrities = functions.load_celebrities("src/Data/celebrities.csv")
+    celebrities = functions.load_celebrities_file("src/Data/celebrities.csv")
 
     # Create a row for each celebrity in the CSV file
     for celebrity in celebrities:
-        celebrityData = functions.create_celebrity_row(celebrity)
-        
+        firstName = celebrity["first_name"]
+        lastName = celebrity["last_name"]
+        dateOfBirth = celebrity["date_of_birth"]
+
         # Create the row using the celebrity data
         rowFrame = CTkFrame(scrollFrame, width=1280, height=100)
         rowFrame.pack(fill="x", pady=5)
 
-        # Image
-        imageLabel = CTkLabel(rowFrame, image=celebrityData['image'], text="")
-        imageLabel.pack(side="left", padx=20)
-
         # Name and DOB
-        nameAndDOBLabel = CTkLabel(rowFrame, text=f"{celebrityData['name']} - {celebrityData['dob']}", font=("Arial", 16))
+        nameAndDOBLabel = CTkLabel(rowFrame, text=f"{firstName} {lastName} - {dateOfBirth}", font=("Arial", 16))
         nameAndDOBLabel.pack(side="left", padx=20)
         
         # Celebrity management buttons
-        editButton = CTkButton(rowFrame, text="Edit", command=None, width=60)
+        editButton = CTkButton(rowFrame, text="edit", command=None, width=60)
         editButton.pack(side="right", padx=10)
 
-        removeButton = CTkButton(rowFrame, text="Remove", command=None, width=60)
+        removeButton = CTkButton(rowFrame, text="delete", command=lambda firstName=celebrity["first_name"], lastName=celebrity["last_name"]: removeCelebrity(firstName, lastName), width=60)
         removeButton.pack(side="right", padx=10)
 
         # Favorite button
-        favoriteButton = CTkButton(rowFrame, text="♡", command=None, width=60)
+        favoriteButton = CTkButton(rowFrame, text="favorite", command=None, width=60)
         favoriteButton.pack(side="right", padx=10)
 
 def createSignInFrame(signInType):
     def printToConsole():
         global userAccount
-        username = usernameField.get()
-        password = passwordField.get()
+        username = str(usernameField.get())
+        password = str(passwordField.get())
 
         if signInType == "Login to Account":    
             successfulRegister, newUserAccount, successText = accounts.login(username, password, "src\\Data\\accountInfo.csv")
+            print(f"successfulRegister: {successfulRegister}")
+            print(f"Username: {username}")
+            print(f"Password: {password}")
+
         elif signInType == "Register Account":
             successfulRegister, newUserAccount, successText = accounts.register_user(username, password, False, "src\\Data\\accountInfo.csv")
         else:
             print("Invalid sign in type")
-            #todo make error message redd and success message green
             
         if successfulRegister:
             userAccount = newUserAccount
-            successLabel = CTkLabel(signInFrame, text=f"Successfuly {successText}\n Redirecting Home", font=("Arial", 18), width=640)
+            successLabel = CTkLabel(signInFrame, text=f"Successfuly {successText}\n Redirecting Home", font=("Arial", 18), width=640, text_color="green")
             successLabel.place(relx=0.5, rely=0.3, anchor="center")
             app.after(2000, showMainFrame)
         else:
-            successLabel = CTkLabel(signInFrame, text=successText, font=("Arial", 18), width=640)
+            successLabel = CTkLabel(signInFrame, text=successText, font=("Arial", 18), width=640, text_color="red")
             successLabel.place(relx=0.5, rely=0.3, anchor="center")
 
     global signInFrame
@@ -180,24 +184,24 @@ def createEditCelebrityFrame(editType):
         celebrityName = firstNameField.get() + "_" + lastNameField.get()
         localImagePath = functions.copy_image_to_folder(filePath, celebrityName)
 
-    def addCelebrity():
+    def editCelebrity():
         firstName = firstNameField.get()
         lastName = lastNameField.get()
         dateOfBirth = dobField.get()
         imagePath = localImagePath
 
         celebrityData = {
-            'first_name': firstName,
-            'last_name': lastName,
-            'date_of_birth': dateOfBirth,
-            'images_path': imagePath
+            "first_name": firstName,
+            "last_name": lastName,
+            "date_of_birth": dateOfBirth,
+            "images_path": imagePath
         }
 
         # Add the celebrity to the CSV
         functions.add_data("src/Data/celebrities.csv", celebrityData)
 
         # Show success message
-        successMessage = CTkLabel(editCelebrityFrame, text=f"Successfully added {firstName} {lastName}!", font=("Arial", 16))
+        successMessage = CTkLabel(editCelebrityFrame, text=f"Successfully added {firstName} {lastName}!", font=("Arial", 16), text_color="green")
         successMessage.place(relx=0.5, rely=0.75, anchor="center")
         app.after(2000, showMainFrame)
 
@@ -225,7 +229,7 @@ def createEditCelebrityFrame(editType):
     imageSelectButton.place(relx=0.5, rely=0.7, anchor="center")
 
     # Submit button to add celebrity
-    submitButton = CTkButton(editCelebrityFrame, text="Add Celebrity", command=addCelebrity, width=100, font=("Arial", 16))
+    submitButton = CTkButton(editCelebrityFrame, text="Add Celebrity", command=editCelebrity, width=100, font=("Arial", 16))
     submitButton.place(relx=0.5, rely=0.8, anchor="center")
 
     # Go back to main menu
