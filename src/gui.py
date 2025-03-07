@@ -173,7 +173,7 @@ def createSignInFrame(signInType):
     backButton = CTkButton(signInFrame, text="home", command=showMainFrame, width=60)
     backButton.place(relx=0.05, rely=0.05, anchor="center")
 
-def createEditCelebrityFrame(editType):
+def createEditCelebrityFrame(editType, firstName=None, lastName=None):
     global localImagePath
 
     def getImagePath():
@@ -187,24 +187,42 @@ def createEditCelebrityFrame(editType):
     def editCelebrity():
         firstName = firstNameField.get()
         lastName = lastNameField.get()
-        dateOfBirth = dobField.get()
+        dateOfBirth = dateOfBirthField.get()
         imagePath = localImagePath
 
-        celebrityData = {
-            "first_name": firstName,
-            "last_name": lastName,
-            "date_of_birth": dateOfBirth,
-            "images_path": imagePath
-        }
+        if not firstName or not lastName or not dateOfBirth:
+            successMessage = CTkLabel(editCelebrityFrame, text="Please fill in all fields.", font=("Arial", 16), text_color="red")
+            successMessage.place(relx=0.5, rely=0.75, anchor="center")
+            return
 
-        # Add the celebrity to the CSV
-        functions.add_data("src/Data/celebrities.csv", celebrityData)
+        if editType == "Add":
+            # Add the celebrity to the CSV
+            celebrityData = {
+                "first_name": firstName,
+                "last_name": lastName,
+                "date_of_birth": dateOfBirth,
+                "images_path": imagePath
+            }
 
-        # Show success message
-        successMessage = CTkLabel(editCelebrityFrame, text=f"Successfully added {firstName} {lastName}!", font=("Arial", 16), text_color="green")
-        successMessage.place(relx=0.5, rely=0.75, anchor="center")
-        app.after(2000, showMainFrame)
+            # Add the celebrity to the CSV
+            functions.add_data("src/Data/celebrities.csv", celebrityData)
 
+            # Show success message
+            successMessage = CTkLabel(editCelebrityFrame, text=f"Successfully added {firstName} {lastName}!", font=("Arial", 16), text_color="green")
+            successMessage.place(relx=0.5, rely=0.75, anchor="center")
+            app.after(2000, showMainFrame)
+
+        elif editType == "Edit":
+            # Update the celebrity's data in the CSV
+            functions.edit_data("src/Data/celebrities.csv", "first_name", firstName, dateOfBirth, imagePath)
+
+            # Show success message
+            successMessage = CTkLabel(editCelebrityFrame, text=f"Successfully edited {firstName} {lastName}!", font=("Arial", 16), text_color="green")
+            successMessage.place(relx=0.5, rely=0.75, anchor="center")
+            app.after(2000, showMainFrame)
+
+        else:
+            print("Invalid edit type")
 
     global editCelebrityFrame
     
@@ -222,8 +240,8 @@ def createEditCelebrityFrame(editType):
     lastNameField = CTkEntry(editCelebrityFrame, width=500, placeholder_text="Enter Last Name")
     lastNameField.place(relx=0.5, rely=0.4, anchor="center")
 
-    dobField = CTkEntry(editCelebrityFrame, width=500, placeholder_text="Enter Date of Birth (ex. October 29, 1955)")
-    dobField.place(relx=0.5, rely=0.5, anchor="center")
+    dateOfBirthField = CTkEntry(editCelebrityFrame, width=500, placeholder_text="Enter Date of Birth (ex. October 29, 1955)")
+    dateOfBirthField.place(relx=0.5, rely=0.5, anchor="center")
 
     imageSelectButton = CTkButton(editCelebrityFrame, width=100, text="Select Image", command=getImagePath)
     imageSelectButton.place(relx=0.5, rely=0.7, anchor="center")
