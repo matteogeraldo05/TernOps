@@ -19,60 +19,61 @@ favoritesFrame = None
 # Hide all frames
 def hideAllFrames():
     if mainFrame:
-        mainFrame.place_forget()
+        mainFrame.pack_forget()
     if signInFrame:
-        signInFrame.place_forget()
+        signInFrame.pack_forget()
     if favoritesFrame:
-        favoritesFrame.place_forget()
+        favoritesFrame.pack_forget()
 
 # Show the main frame
 def showMainFrame():
     hideAllFrames()
     createMainFrame()
-    mainFrame.place(relx=0.5, rely=0.5, anchor="center")
+    mainFrame.pack(fill="both", expand=True)
 
 # Show the login frame
 def showSignInFrame(signInType):
     hideAllFrames()
-    #signInFrame.place(relx=0.5, rely=0.5, anchor="center")
     createSignInFrame(signInType)
 
 def createMainFrame():
     global mainFrame, userAccount
-    
+
     # Frame to house all elements
     mainFrame = CTkFrame(app, width=1280, height=720)
-    mainFrame.place(relx=0.5, rely=0.5, anchor="center")  
+    mainFrame.pack(fill="both", expand=True)
 
-    # topFrame to house top elements (user info, login/register buttons)
-    topFrame = CTkFrame(mainFrame, width=1280, height=100)
-    topFrame.place(relx=0.5, rely=0.05, anchor="center")
+    topFrame = CTkFrame(mainFrame, width=1280, height=70)
+    topFrame.pack(fill="x", side="top")
 
     #User info
-    userLabel = CTkLabel(mainFrame, text=userAccount.get_user_name(), font=("Arial", 22))
-    userLabel.place(relx=0.08, rely=0.05, anchor="center")
+    userLabel = CTkLabel(topFrame, text=userAccount.get_user_name(), font=("Arial", 22))
+    userLabel.pack(side="left", padx=40)
     #TODO Profile Picture 
     #profilePicture = CTkImage(dark_image=Image.open("src\\Data\\Images\\user\\default.png"), size=(30,30))
     #profilePictureLabel = CTkLabel(mainFrame, image=profilePicture)
-    #profilePictureLabel.place(relx=0.01, rely=0.05, anchor="w")
 
-    #Login / Register buttons
-    loginButton = CTkButton(mainFrame, text="Login", command=lambda: showSignInFrame("Login to Account"), width=60) #keep the same width as the register button
-    loginButton.place(relx=0.96, rely=0.05, anchor="center")
-    registerButton = CTkButton(mainFrame, text="Register", command=lambda: showSignInFrame("Register Account"), width=15)
-    registerButton.place(relx=0.91, rely=0.05, anchor="center")
+    # Login / Register buttons
+    loginButton = CTkButton(topFrame, text="Login", command=lambda: showSignInFrame("Login to Account"), width=60) #keep the same width as the register button
+    loginButton.pack(side="right", padx=15)
+    registerButton = CTkButton(topFrame, text="Register", command=lambda: showSignInFrame("Register Account"), width=15)
+    registerButton.pack(side="right")
 
+    # Searchbar
+    searchbar = CTkEntry(topFrame, width=500, placeholder_text="Search for a celebrity")
+    searchbar.pack(side="top", pady=10)
+
+    # Scrollable frame to house list of celebrities
+    scrollFrame = CTkScrollableFrame(mainFrame, width=1280, height=660)
+    scrollFrame.pack(fill="both")
+    
     #Celebrity management buttons
-    addButton = CTkButton(mainFrame, text="Add", command=None, width=60)
-    addButton.place(relx=0.4, rely=0.5, anchor="center")
-    removeButton = CTkButton(mainFrame, text="Remove", command=None, width=60)
-    removeButton.place(relx=0.5, rely=0.5, anchor="center")
-    editButton = CTkButton(mainFrame, text="Edit", command=None, width=60)
-    editButton.place(relx=0.6, rely=0.5, anchor="center")
-
-    #Searchbar
-    searchbar = CTkEntry(mainFrame, width=500, placeholder_text="Search for a celebrity")
-    searchbar.place(relx=0.5, rely=0.05, anchor="center")
+    addButton = CTkButton(scrollFrame, text="Add", command=None, width=60)
+    addButton.pack(side="left", padx=10)
+    removeButton = CTkButton(scrollFrame, text="Remove", command=None, width=60)
+    removeButton.pack(side="left", padx=10)
+    editButton = CTkButton(scrollFrame, text="Edit", command=None, width=60)
+    editButton.pack(side="left", padx=10)
 
 def createSignInFrame(signInType):
     def printToConsole():
@@ -115,7 +116,7 @@ def createSignInFrame(signInType):
 
     #go back to main menu
     backButton = CTkButton(signInFrame, text="home", command=showMainFrame, width=60)
-    backButton.place(relx=0.1, rely=0.05, anchor="center")
+    backButton.place(relx=0.05, rely=0.05, anchor="center")
 
 
 createMainFrame()
