@@ -28,8 +28,28 @@ The project is a catalogue of celebrity biographies, which will help users under
 
 ***
 
-## Running the MVP:
+## Running the MVP
+
 ### Basic setup to run the MVP:
-- Open the cloned repository in a code editor
-- Open the **gui.py** file found under the **src** folder 
-- Run the **gui.py** file to have the MVP run
+
+1. **Clone the Repository**<br>
+   Clone this repository to your local machine using,<br>
+   ```bash
+   git clone <repository-url>
+
+3. **Open the Repository**<br>
+   Navigate to the project folder and open it in your preferred IDE.
+
+4. **Install Dependencies**<br>
+   Open a terminal and run the following command to install the required rependencies,<br>
+   ```bash
+   pip install -r requirements.txt
+
+5. **Import Necessary Libraries**<br>
+   this will automatically install all the necessary libraries for the MVP to run.
+
+6. **Run the GUI**<br>
+   Locate and open the **`gui.py`** file under the **`src`** folder.
+
+7. **Launch the MVP**<br>
+   Run the **`gui.py`** file to start the MVP application.
