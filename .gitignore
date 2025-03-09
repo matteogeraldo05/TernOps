@@ -8,3 +8,11 @@ venv/
 # IDE / Editor files
 .vscode/
 .idea/
+
+# Do not upload user data
+*.csv
+# Dont upload so many images
+Images/
+*.png
+*.jpg
+*.jpeg    
