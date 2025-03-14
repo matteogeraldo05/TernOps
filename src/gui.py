@@ -3,7 +3,7 @@ from CTkMessagebox import CTkMessagebox
 from PIL import Image
 import accounts
 import functions
-
+import pytest
 
 app = CTk()
 app.title("Celebrity Bio Application")
@@ -114,11 +114,20 @@ def createMainFrame():
     # Magnifying glass icon
     magnifyIcon = CTkImage(dark_image=Image.open("src\\Data\\Images\\system\\magnify.png"), size=(30, 30))
     # Create a label with the magnify icon and place it inside the search bar
-    magnifyLabel = CTkLabel(topFrame, image=magnifyIcon, text="")
-    magnifyLabel.place(relx=0.715, rely=0.5, anchor="center")  
+    magnifyLabel = CTkLabel(topFrame, image=magnifyIcon, text="", cursor="hand2")
+    magnifyLabel.place(relx=0.715, rely=0.5, anchor="center") 
+    magnifyLabel.bind("<Button-1>", lambda event: print(searchbar.get()))
+
+    #TODO Filter
+    # Magnifying glass icon
+    FilterIcon = CTkImage(dark_image=Image.open("src\\Data\\Images\\system\\filter.png"), size=(30, 30))
+    # Create a label with the magnify icon and place it inside the search bar
+    FilterLabel = CTkLabel(topFrame, image=FilterIcon, text="", cursor="hand2")
+    FilterLabel.place(relx=0.8, rely=0.5, anchor="center") 
+    FilterLabel.bind("<Button-1>", lambda event: print(searchbar.get())) 
     
     # Add Celebrity
-    addButton = CTkButton(topFrame, text="+", font=("Arial",24), command=lambda: createEditCelebrityFrame("Add"), width=36, height=36, fg_color=colorPalette["mediumGray"], hover_color=colorPalette["lightGray"])
+    addButton = CTkButton(topFrame, text="+", font=("Arial",24), command=lambda: createEditCelebrityFrame("Add"), width=36, height=36, fg_color=colorPalette["darkGray"], hover_color=colorPalette["lightGray"])
     addButton.place(relx=0.75, rely=0.5, anchor="center")
 
     # Scrollable frame to house list of celebrities
@@ -214,22 +223,25 @@ def createSignInFrame(signInType):
     passwordField.place(relx=0.5, rely=0.6, anchor="center")
     passwordField.bind("<Return>", lambda event: printToLabel())
     #Submit
-    submitButton = CTkButton(signInFrame, text=signInType, command=printToLabel, width=80, font=("Arial", 16))
+    submitButton = CTkButton(signInFrame, text=signInType, command=printToLabel, width=80, font=("Arial", 16), fg_color=colorPalette["darkGray"], hover_color=colorPalette["lightGray"])
     submitButton.place(relx=0.5, rely=0.8, anchor="center")
 
     #go back to main menu
-    backButton = CTkButton(signInFrame, text="home", command=showMainFrame, width=60)
+    backButton = CTkButton(signInFrame, text="home", command=showMainFrame, width=60, font=("Arial", 16), fg_color=colorPalette["darkGray"], hover_color=colorPalette["lightGray"])
     backButton.place(relx=0.05, rely=0.05, anchor="center")
 
 # Create the edit celebrity frame
 def createEditCelebrityFrame(editType, originalFirstName=None, originalLastName=None):
     global localImagePath
 
+    first = originalFirstName
+    last = originalLastName
+
     def getImagePath():
         global localImagePath
         filePath = filedialog.askopenfilename(title="Select an Image", filetypes=[("Image Files", "*.jpg;*.jpeg;*.png;")])
         filePathLabel = CTkLabel(editCelebrityFrame, text=f"Image: {filePath}", font=("Arial", 16))
-        filePathLabel.place(x=120, y=550)
+        filePathLabel.place(x=120, y=595)
         celebrityName = firstNameField.get() + "_" + lastNameField.get()
         localImagePath = functions.copy_image_to_folder(filePath, celebrityName)
 
@@ -357,71 +369,90 @@ def createEditCelebrityFrame(editType, originalFirstName=None, originalLastName=
     biographyField.place(x=120, y=390)
 
     # Image
-    imageSelectButton = CTkButton(editCelebrityFrame, width=100, text="Select Image", command=getImagePath)
-    imageSelectButton.place(x=250, y=500)
+    imageSelectButton = CTkButton(editCelebrityFrame, width=100, text="Select Image", command=getImagePath, font=("Arial", 16), fg_color=colorPalette["darkGray"], hover_color=colorPalette["lightGray"])
+    imageSelectButton.place(x=250, rely=0.9)
 
 
     #Right side
     # Net Worth
-    netWorthLabel = CTkLabel(editCelebrityFrame, text="Net Worth")
-    netWorthLabel.place(x=650, y=110)
+    netWorthLabel = CTkLabel(editCelebrityFrame, text="Net Worth:")
+    netWorthLabel.place(x=620, y=110)
     netWorthField = CTkEntry(editCelebrityFrame, width=200, placeholder_text="Enter Net Worth")
     netWorthField.place(x=750, y=110)
 
     # Family
     familyField = CTkLabel(editCelebrityFrame, text="Family:")
-    familyField.place(x=650, y=150)
+    familyField.place(x=620, y=150)
     familyField = CTkEntry(editCelebrityFrame, width=200, placeholder_text="Enter Family")
     familyField.place(x=750, y=150)
 
     # Controversies
     controversiesLabel = CTkLabel(editCelebrityFrame, text="Controversies:")
-    controversiesLabel.place(x=650, y=190)
+    controversiesLabel.place(x=620, y=190)
     controversiesField = CTkEntry(editCelebrityFrame, width=200, placeholder_text="Enter Controversies")
     controversiesField.place(x=750, y=190)
 
     # Discography
     discographyLabel = CTkLabel(editCelebrityFrame, text="Controversies:")
-    discographyLabel.place(x=650, y=230)
+    discographyLabel.place(x=620, y=230)
     discographyField = CTkEntry(editCelebrityFrame, width=200, placeholder_text="Enter Discography")
     discographyField.place(x=750, y=230)
 
     # Films
     filmographyLabel = CTkLabel(editCelebrityFrame, text="Filmography:")
-    filmographyLabel.place(x=650, y=270)
+    filmographyLabel.place(x=620, y=270)
     filmographyField = CTkEntry(editCelebrityFrame, width=200, placeholder_text="Enter Filmography")
     filmographyField.place(x=750, y=270)
 
     # Genre
     genresLabel = CTkLabel(editCelebrityFrame, text="Genres:")
-    genderLabel.place(x=650, y=310)
+    genderLabel.place(x=620, y=310)
     genresField = CTkEntry(editCelebrityFrame, width=200, placeholder_text="Enter Genres")
     genresField.place(x=750, y=310)
 
     # Influence
     influenceLabel = CTkLabel(editCelebrityFrame, text="Influcence:")
-    influenceLabel.place(x=650, y=350)
+    influenceLabel.place(x=620, y=350)
     influenceField = CTkEntry(editCelebrityFrame, width=200, placeholder_text="Enter Influence")
     influenceField.place(x=750, y=350)
 
     # Politics
     politicalLabel = CTkLabel(editCelebrityFrame, text="Political Orientation:")
-    politicalLabel.place(x=650, y=390)
+    politicalLabel.place(x=620, y=390)
     politicalField = CTkEntry(editCelebrityFrame, width=200, placeholder_text="Enter Political Orientation")
     politicalField.place(x=750, y=390)
 
     # Achievements
     achievementsLabel = CTkLabel(editCelebrityFrame, text="Achievements:")
-    achievementsLabel.place(x=650, y=430)
+    achievementsLabel.place(x=620, y=430)
     achievementsField = CTkTextbox(editCelebrityFrame, width=500)
     achievementsField.place(x=750, y=430)
 
+    # Pre-populate fields if we are editing
+    if editType == "Edit" and first and last:
+        celebrities = functions.load_celebrities_file("src/Data/celebrities.csv")
+        celeb = next((c for c in celebrities if c["first_name"] == first and c["last_name"] == last), None)
+        if celeb:
+            firstNameField.insert(0, celeb.get("first_name", ""))
+            lastNameField.insert(0, celeb.get("last_name", ""))
+            dateOfBirthField.insert(0, celeb.get("date_of_birth", ""))
+            # You can similarly pre-populate additional fields if needed
+
+    # The submit button text changes based on the mode
+    submitButton = CTkButton(
+        editCelebrityFrame,
+        text="Add Celebrity" if editType == "Add" else "Edit Celebrity",
+        command=editCelebrity,
+        width=100,
+        font=("Arial", 16)
+    )
+
     # Submit button to add celebrity
-    submitButton = CTkButton(editCelebrityFrame, text="Add Celebrity", command=editCelebrity, width=100, font=("Arial", 16))
+    submitButton = CTkButton(editCelebrityFrame, text="Add Celebrity", command=editCelebrity, width=100, font=("Arial", 16), fg_color=colorPalette["darkGray"], hover_color=colorPalette["lightGray"])
     submitButton.place(relx=0.5, rely=0.9, anchor="center")
 
     # Go back to main menu
-    backButton = CTkButton(editCelebrityFrame, text="Home", command=showMainFrame, width=60)
+    backButton = CTkButton(editCelebrityFrame, text="Home", command=showMainFrame, width=60, font=("Arial", 16), fg_color=colorPalette["darkGray"], hover_color=colorPalette["lightGray"])
     backButton.place(relx=0.05, rely=0.05, anchor="center")
 
 def createCelebrityFrame(celebrity):
@@ -437,7 +468,7 @@ def createCelebrityFrame(celebrity):
         row += 1
     
     # Add a "Back" button to return to the main view
-    backButton = CTkButton(celebrityFrame, text="Back", command=showMainFrame)
+    backButton = CTkButton(celebrityFrame, text="Back", font=("Arial", 14), command=showMainFrame, fg_color=colorPalette["darkGray"], hover_color=colorPalette["lightGray"])
     backButton.grid(row=row, column=0, pady=20)
 
 createMainFrame()
