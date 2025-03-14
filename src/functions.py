@@ -40,14 +40,14 @@ def edit_data(file_path, identifier_col, identifier_value, column_to_edit, new_v
 
 
 # Example Usage:
-edit_data("src/data/celebrities.csv", "first_name", "Bill", "date_of_birth", "October 29, 1955")
+# edit_data("src/data/celebrities.csv", "first_name", "Bill", "date_of_birth", "October 29, 1955")
 
 
 def add_data(file_path,new_data):
     df = pd.read_csv(file_path)
 
     # Check if the entry already exists
-    mask = (df['first_name'] == new_data['first_name']) & (df['last_name'] == new_data['last_name']) & (df['date_of_birth'] == new_data['date_of_birth']) & (df['images_path'] == new_data['images_path'])
+    mask = (df['first_name'] == new_data['first_name']) & (df['last_name'] == new_data['last_name']) & (df['date_of_birth'] == new_data['date_of_birth']) & (df['images_path'] == new_data['images_path'] & (df['tags'] == new_data['tags']))
 
     if mask.any():
         print(f"Entry for {new_data['first_name']} {new_data['last_name']} already exists.")
@@ -119,13 +119,16 @@ def copy_image_to_folder(image_path, celebrity_name):
 
 def load_celebrities_file(csv_file):
     # Load celebrities directly from the CSV into a DataFrame
-    df = pd.read_csv(csv_file, usecols=['first_name', 'last_name', 'date_of_birth', 'images_path'])
+    df = pd.read_csv(csv_file, usecols=['first_name', 'last_name', 'date_of_birth', 'images_path','tags'])
+    #Splits tags into a list (seperated via ,)
+    df['tags'] = df['tags'].apply(lambda x: str(x).split(',') if isinstance(x, str) else [])
     # Convert the DataFrame to a list of dictionaries
     celebrities = df.to_dict(orient='records')
     return celebrities
 
-# def filter_data(tag):
-#     return #data which matches the tag
+def filter_data_tag(celebrities,tag):
+    filtered_celebrities = [celebrity for celebrity in celebrities if tag in celebrity['tags']]
+    return filtered_celebrities#data which matches the tag
 
 # edit_data("data/celebrities.csv", "first_name", "Steve", "date_of_birth", "February 24, 1955")
 
@@ -168,7 +171,8 @@ def menu():
                 'first_name': input("Enter first name: "),
                 'last_name': input("Enter last name: "),
                 'date_of_birth': input("Enter date of birth: "),
-                'images_path': input("Enter image path: ")
+                'images_path': input("Enter image path: "),
+                'tags': input("Enter tags with commas: (ie. athlete,artist)")
             }
             add_data(file_path, new_entry)
         elif choice == "4":

@@ -57,6 +57,46 @@ def createMainFrame():
             showMainFrame()
         else:
             pass
+    def searchCelebrities():
+        search = searchbar.get().lower()  # Get the text in searchbar
+        filtered_celebrities = []
+
+        # Iterate through all celebrities
+        for celeb in celebrities:
+           # Converts names and tags to lowercase
+           first_name = celeb["first_name"].lower()  
+           last_name = celeb["last_name"].lower()  
+           tags = [tag.lower() for tag in celeb.get("tags", [])]  
+            # Check if the searchbar text matches either first name, last name, or any tag
+           if search in first_name or search in last_name or any(search in tag for tag in tags):
+               filtered_celebrities.append(celeb)
+        updateCelebrityList(filtered_celebrities)  
+
+    def updateCelebrityList(filtered_celebrities):
+        # Clear the previous celebrity list
+        for widget in scrollFrame.winfo_children():
+            widget.destroy()
+        
+        # Add the filtered celebrities to the display
+        for celebrity in filtered_celebrities:
+            firstName = celebrity["first_name"]
+            lastName = celebrity["last_name"]
+            dateOfBirth = celebrity["date_of_birth"]
+            
+            rowFrame = CTkFrame(scrollFrame, width=1280, height=100)
+            rowFrame.pack(fill="x", pady=5)
+
+            nameAndDOBLabel = CTkLabel(rowFrame, text=f"{firstName} {lastName} - {dateOfBirth}", font=("Arial", 16))
+            nameAndDOBLabel.pack(side="left", padx=20)
+
+            editButton = CTkButton(rowFrame, text="edit", command=None, width=60)
+            editButton.pack(side="right", padx=10)
+
+            removeButton = CTkButton(rowFrame, text="delete", command=lambda firstName=celebrity["first_name"], lastName=celebrity["last_name"]: removeCelebrity(firstName, lastName), width=60)
+            removeButton.pack(side="right", padx=10)
+
+            favoriteButton = CTkButton(rowFrame, text="favorite", command=None, width=60)
+            favoriteButton.pack(side="right", padx=10)
 
     global mainFrame, userAccount
 
@@ -93,6 +133,10 @@ def createMainFrame():
     # Searchbar
     searchbar = CTkEntry(topFrame, width=500, placeholder_text="Search for a celebrity")
     searchbar.pack(side="right", pady=20)
+
+    # Add a search button next to the search bar
+    searchButton = CTkButton(topFrame, text="Search", command=searchCelebrities)
+    searchButton.pack(side="right", padx=5)
 
     # Scrollable frame to house list of celebrities
     scrollFrame = CTkScrollableFrame(mainFrame, width=1280, height=660)
@@ -189,6 +233,7 @@ def createEditCelebrityFrame(editType, firstName=None, lastName=None):
         lastName = lastNameField.get()
         dateOfBirth = dateOfBirthField.get()
         imagePath = localImagePath
+        tags = tagsField.get()
 
         if not firstName or not lastName or not dateOfBirth:
             successMessage = CTkLabel(editCelebrityFrame, text="Please fill in all fields.", font=("Arial", 16), text_color="red")
@@ -201,7 +246,8 @@ def createEditCelebrityFrame(editType, firstName=None, lastName=None):
                 "first_name": firstName,
                 "last_name": lastName,
                 "date_of_birth": dateOfBirth,
-                "images_path": imagePath
+                "images_path": imagePath,
+                "tags" : tags
             }
 
             # Add the celebrity to the CSV
@@ -214,7 +260,7 @@ def createEditCelebrityFrame(editType, firstName=None, lastName=None):
 
         elif editType == "Edit":
             # Update the celebrity's data in the CSV
-            functions.edit_data("src/Data/celebrities.csv", "first_name", firstName, dateOfBirth, imagePath)
+            functions.edit_data("src/Data/celebrities.csv", "first_name", firstName, dateOfBirth, imagePath, tags)
 
             # Show success message
             successMessage = CTkLabel(editCelebrityFrame, text=f"Successfully edited {firstName} {lastName}!", font=("Arial", 16), text_color="green")
@@ -242,6 +288,9 @@ def createEditCelebrityFrame(editType, firstName=None, lastName=None):
 
     dateOfBirthField = CTkEntry(editCelebrityFrame, width=500, placeholder_text="Enter Date of Birth (ex. October 29, 1955)")
     dateOfBirthField.place(relx=0.5, rely=0.5, anchor="center")
+
+    tagsField = CTkEntry(editCelebrityFrame, width=500, placeholder_text="Enter Tags (comma-separated)")
+    tagsField.place(relx=0.5, rely=0.6, anchor="center")
 
     imageSelectButton = CTkButton(editCelebrityFrame, width=100, text="Select Image", command=getImagePath)
     imageSelectButton.place(relx=0.5, rely=0.7, anchor="center")
