@@ -162,7 +162,7 @@ def createMainFrame():
         bioLabel = CTkLabel(rowFrame, text=brief_bio, font=("Arial", 12))
         bioLabel.pack(side="left", padx=20)
         # Celebrity management buttons
-        editButton = CTkButton(rowFrame, text="edit", command=None, width=60)
+        editButton = CTkButton(rowFrame, text="edit", command=lambda celeb=celebrity: createEditCelebrityFrame("Edit", celeb["first_name"], celeb["last_name"]), width=60)
         editButton.pack(side="right", padx=10)
 
         removeButton = CTkButton(rowFrame, text="delete", command=lambda firstName=celebrity["first_name"], lastName=celebrity["last_name"]: removeCelebrity(firstName, lastName), width=60)
@@ -222,14 +222,14 @@ def createSignInFrame(signInType):
     backButton.place(relx=0.05, rely=0.05, anchor="center")
 
 # Create the edit celebrity frame
-def createEditCelebrityFrame(editType, firstName=None, lastName=None):
+def createEditCelebrityFrame(editType, originalFirstName=None, originalLastName=None):
     global localImagePath
 
     def getImagePath():
         global localImagePath
         filePath = filedialog.askopenfilename(title="Select an Image", filetypes=[("Image Files", "*.jpg;*.jpeg;*.png;")])
         filePathLabel = CTkLabel(editCelebrityFrame, text=f"Image: {filePath}", font=("Arial", 16))
-        filePathLabel.place(x=120, y=650)
+        filePathLabel.place(x=120, y=550)
         celebrityName = firstNameField.get() + "_" + lastNameField.get()
         localImagePath = functions.copy_image_to_folder(filePath, celebrityName)
 
@@ -276,12 +276,23 @@ def createEditCelebrityFrame(editType, firstName=None, lastName=None):
             app.after(2000, showMainFrame)
 
         elif editType == "Edit":
-            # Update the celebrity's data in the CSV
-            functions.edit_data("src/Data/celebrities.csv", "first_name", firstName, dateOfBirth, imagePath)
+            import pandas as pd
+            df = pd.read_csv("src/Data/celebrities.csv")
+            # Locate the record using the original first and last names
+            mask = (df["first_name"] == originalFirstName) & (df["last_name"] == originalLastName)
+            if not mask.any():
+                errorLabel = CTkLabel(editCelebrityFrame, text="Celebrity not found.", font=("Arial", 16), text_color="red")
+                errorLabel.place(relx=0.5, rely=0.75, anchor="center")
+                return
 
-            # Show success message
-            successMessage = CTkLabel(editCelebrityFrame, text=f"Successfully edited {firstName} {lastName}!", font=("Arial", 16), text_color="green")
-            successMessage.place(relx=0.5, rely=0.75, anchor="center")
+            # Update the desired fields
+            df.loc[mask, "first_name"] = firstName
+            df.loc[mask, "last_name"] = lastName
+            df.loc[mask, "date_of_birth"] = dateOfBirth
+            df.loc[mask, "images_path"] = imagePath
+            df.to_csv("src/Data/celebrities.csv", index=False)
+            successLabel = CTkLabel(editCelebrityFrame, text=f"Successfully edited {firstName} {lastName}!", font=("Arial", 16), text_color="green")
+            successLabel.place(relx=0.5, rely=0.75, anchor="center")
             app.after(2000, showMainFrame)
 
         else:
@@ -347,7 +358,7 @@ def createEditCelebrityFrame(editType, firstName=None, lastName=None):
 
     # Image
     imageSelectButton = CTkButton(editCelebrityFrame, width=100, text="Select Image", command=getImagePath)
-    imageSelectButton.place(x=250, y=650)
+    imageSelectButton.place(x=250, y=500)
 
 
     #Right side
