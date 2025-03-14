@@ -80,8 +80,7 @@ def login(user_name, password, file_path):
         user_data = user_data.iloc[0]
         
         # Verify the user's password
-        print(f"accounts.py pasword: {user_data.iloc[1]}")
-        if user_data.iloc[1] == password:
+        if str(user_data.iloc[1]) == password:
             #print(f"Login successful!\nWelcome {user_name}!")
             current_account = Account(user_data["user_name"],user_data["password"],user_data["is_admin"]) # Create a new Account object with the users data
             return True, current_account, "Logged In."

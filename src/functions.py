@@ -40,7 +40,7 @@ def edit_data(file_path, identifier_col, identifier_value, column_to_edit, new_v
 
 
 # Example Usage:
-edit_data("src/data/celebrities.csv", "first_name", "Bill", "date_of_birth", "October 29, 1955")
+#edit_data("src/data/celebrities.csv", "first_name", "Bill", "date_of_birth", "October 29, 1955")
 
 
 def add_data(file_path,new_data):
@@ -119,7 +119,7 @@ def copy_image_to_folder(image_path, celebrity_name):
 
 def load_celebrities_file(csv_file):
     # Load celebrities directly from the CSV into a DataFrame
-    df = pd.read_csv(csv_file, usecols=['first_name', 'last_name', 'date_of_birth', 'images_path'])
+    df = pd.read_csv(csv_file)
     # Convert the DataFrame to a list of dictionaries
     celebrities = df.to_dict(orient='records')
     return celebrities
