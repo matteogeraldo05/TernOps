@@ -1,9 +1,6 @@
 # Functions that deal with the csv files
 
-import csv
-import numpy as np
 import pandas as pd
-import datetime
 import os
 import shutil
 
@@ -47,7 +44,7 @@ def add_data(file_path,new_data):
     df = pd.read_csv(file_path)
 
     # Check if the entry already exists
-    mask = (df['first_name'] == new_data['first_name']) & (df['last_name'] == new_data['last_name']) & (df['date_of_birth'] == new_data['date_of_birth']) & (df['images_path'] == new_data['images_path'])
+    mask = (df['first_name'] == new_data['first_name']) & (df['last_name'] == new_data['last_name']) & (df['date_of_birth'] == new_data['date_of_birth'])
 
     if mask.any():
         print(f"Entry for {new_data['first_name']} {new_data['last_name']} already exists.")
@@ -119,7 +116,7 @@ def copy_image_to_folder(image_path, celebrity_name):
 
 def load_celebrities_file(csv_file):
     # Load celebrities directly from the CSV into a DataFrame
-    df = pd.read_csv(csv_file)
+    df = pd.read_csv(csv_file, encoding="utf-8")
     # Convert the DataFrame to a list of dictionaries
     celebrities = df.to_dict(orient='records')
     return celebrities

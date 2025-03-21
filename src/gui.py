@@ -25,7 +25,7 @@ mainFrame = None
 signInFrame = None
 editCelebrityFrame = None
 celebrityFrame = None
-favoritesFrame = None
+filterFrame = None
 
 # Hide all frames
 def hideAllFrames():
@@ -33,12 +33,12 @@ def hideAllFrames():
         mainFrame.pack_forget()
     if signInFrame:
         signInFrame.place_forget()
-    if favoritesFrame:
-        favoritesFrame.pack_forget()
     if editCelebrityFrame:
         editCelebrityFrame.pack_forget()
     if celebrityFrame:
         celebrityFrame.pack_forget()
+    if filterFrame:
+        filterFrame.pack_forget()
 
 # Show the main frame
 def showMainFrame():
@@ -61,14 +61,13 @@ def showCelebrityFrame():
     hideAllFrames()
     createCelebrityFrame()
 
-# Create the favorites frame
-def createMainFrame():
-    def logoutAndShowMain():
-        global userAccount
-        userAccount = accounts.Guest() #todo
-        showMainFrame()
-    
-    def removeCelebrity(firstName, lastName):
+# Show the filter frame
+def showFilterFrame():
+    hideAllFrames()
+    createFilterFrame()
+
+#------------------------------------------FUNCTIONS TO BE MOVED------------------------------------------------
+def removeCelebrity(firstName, lastName):
         deleteCeleb = CTkMessagebox(message=f"Are you sure you would like to delete {firstName} {lastName}? This action is permenant.", icon="warning", option_1="Yes", option_2="No")
         if deleteCeleb.get() == "Yes":
             functions.delete_data("src\\Data\\celebrities.csv", firstName, lastName)
@@ -76,13 +75,96 @@ def createMainFrame():
         else:
             pass
 
-    global mainFrame, userAccount
+def createCelebrityRow(celebrities, scrollFrame):
+    # Clear the previous celebrity list
+    for widget in scrollFrame.winfo_children():
+        widget.destroy()
+
+    # Create a row for each celebrity in the CSV file
+    for celebrity in celebrities:
+        firstName = celebrity["first_name"]
+        lastName = celebrity["last_name"]
+        dateOfBirth = celebrity["date_of_birth"]
+        dateOfDeath = celebrity["date_of_death"]
+        industry = celebrity["industry"]
+        biography = str(celebrity["biography"])
+        #image = celebrity["images_path"]
+
+        # Create a a breif bio
+        brief_bio = biography[:300] + "..."
+
+        # Create the row using the celebrity data
+        rowFrame = CTkFrame(scrollFrame, width=1280, height=150, fg_color=colorPalette["darkGray"], cursor="hand2")
+        rowFrame.pack(fill="x", pady=5)
+
+        # TODO Image
+        celebrityImage = CTkImage(dark_image=Image.open("src\\Data\\Images\\user\\user_100.png"), size=(150, 150))
+        celebrityLabel = CTkLabel(rowFrame, image=celebrityImage, text="")
+        celebrityLabel.pack(side="left", padx=10, pady=10)
+
+        # Name, DOB, Industry Labels
+        labelFrame = CTkFrame(rowFrame, fg_color=colorPalette["darkGray"])
+        labelFrame.pack(side="left", padx=10, pady=10)
+        # Name
+        nameLabel = CTkLabel(labelFrame, text=f"{firstName} {lastName}", font=("Helvetica", 30))
+        nameLabel.grid(row=0, column=0, sticky="w")
+        # DOB
+        dobLabel = CTkLabel(labelFrame, text=f"{dateOfBirth} - {dateOfDeath}", font=("Helvetica", 18))
+        dobLabel.grid(row=1, column=0, sticky="w")
+        # Industry
+        industryLabel = CTkLabel(labelFrame, text=f"{industry}", font=("Helvetica", 18))
+        industryLabel.grid(row=2, column=0, sticky="w")
+
+        # Buttons grouped
+        buttonFrame = CTkFrame(rowFrame, fg_color=colorPalette["darkGray"])
+        buttonFrame.pack(side="right", padx=10, pady=10)
+        # Favorite button
+        favoriteButton = CTkButton(buttonFrame, text="Favorite", command=None, width=60)
+        favoriteButton.grid(row=0, column=0, pady=5)
+        # Learn more button
+        LearnMoreButton = CTkButton(buttonFrame, text="Learn More", command=lambda: showCelebrityFrame(), width=60)
+        LearnMoreButton.grid(row=1, column=0, pady=5)
+        # Edit button
+        editButton = CTkButton(buttonFrame, text="Edit", command=lambda celeb=celebrity: createEditCelebrityFrame("Edit", celeb["first_name"], celeb["last_name"]), width=60)
+        editButton.grid(row=2, column=0, pady=5)
+        # Remove button
+        removeButton = CTkButton(buttonFrame, text="DELETE", command=lambda firstName=celebrity["first_name"], lastName=celebrity["last_name"]: removeCelebrity(firstName, lastName), width=60)
+        removeButton.grid(row=3, column=0, pady=5)
+
+        # Bio
+        bioLabel = CTkLabel(rowFrame, text=brief_bio, font=("Arial", 16), wraplength=650, justify="left")
+        bioLabel.pack(side="right", padx=30, pady=10)
+#------------------------------------------FUNCTIONS TO BE MOVED------------------------------------------------
+
+# Create the favorites frame
+def createMainFrame():
+    def logoutAndShowMain():
+        global userAccount
+        userAccount = accounts.Guest() #todo
+        showMainFrame()
+    
+    def searchCelebrities(userInput, celebrities, scrollFrame):
+        if userInput != "":
+            # Store searched celebrities
+            filteredCelebrities = []
+            # Iterate through all celebrities
+            for celeb in celebrities:
+                # Converts names to lowercase
+                first_name = celeb["first_name"].lower()
+                last_name = celeb["last_name"].lower()
+                if userInput in first_name or userInput in last_name:
+                    filteredCelebrities.append(celeb)
+            createCelebrityRow(filteredCelebrities, scrollFrame)
+        else:
+            pass
+
+    global mainFrame, userAccount, scrollFrame
 
     # Frame to house all elements
     mainFrame = CTkFrame(app, width=1280, height=720)
     mainFrame.pack(fill="both", expand=True)
 
-    topFrame = CTkFrame(mainFrame, width=1280, height=70, fg_color="#121212", corner_radius=0)
+    topFrame = CTkFrame(mainFrame, width=1280, height=70, fg_color=colorPalette["veryDarkGray"], corner_radius=0)
     topFrame.pack(fill="x", side="top")
 
     #TODO Profile Picture 
@@ -110,21 +192,21 @@ def createMainFrame():
     # Searchbar
     searchbar = CTkEntry(topFrame, width=500, placeholder_text="Search for a celebrity", border_width=4, corner_radius=18, font=("Arial", 14), height=46, fg_color=colorPalette["darkGray"])
     searchbar.place(relx=0.5, rely=0.5, anchor="center")
-    searchbar.bind("<Return>", lambda event: print(searchbar.get()))
+    searchbar.bind("<Return>", lambda event: searchCelebrities(searchbar.get().lower(), celebrities, scrollFrame))
     # Magnifying glass icon
     magnifyIcon = CTkImage(dark_image=Image.open("src\\Data\\Images\\system\\magnify.png"), size=(30, 30))
     # Create a label with the magnify icon and place it inside the search bar
     magnifyLabel = CTkLabel(topFrame, image=magnifyIcon, text="", cursor="hand2")
     magnifyLabel.place(relx=0.715, rely=0.5, anchor="center") 
-    magnifyLabel.bind("<Button-1>", lambda event: print(searchbar.get()))
+    magnifyLabel.bind("<Button-1>", lambda event: searchCelebrities(searchbar.get().lower(), celebrities, scrollFrame))
 
     #TODO Filter
-    # Magnifying glass icon
+    # Filter icon glass icon
     FilterIcon = CTkImage(dark_image=Image.open("src\\Data\\Images\\system\\filter.png"), size=(30, 30))
     # Create a label with the magnify icon and place it inside the search bar
     FilterLabel = CTkLabel(topFrame, image=FilterIcon, text="", cursor="hand2")
     FilterLabel.place(relx=0.8, rely=0.5, anchor="center") 
-    FilterLabel.bind("<Button-1>", lambda event: print(searchbar.get())) 
+    FilterLabel.bind("<Button-1>", lambda event: showFilterFrame()) 
     
     # Add Celebrity
     addButton = CTkButton(topFrame, text="+", font=("Arial",24), command=lambda: createEditCelebrityFrame("Add"), width=36, height=36, fg_color=colorPalette["darkGray"], hover_color=colorPalette["lightGray"])
@@ -138,51 +220,7 @@ def createMainFrame():
     celebrities = functions.load_celebrities_file("src/Data/celebrities.csv")
 
     # Create a row for each celebrity in the CSV file
-    for celebrity in celebrities:
-        firstName = celebrity["first_name"]
-        lastName = celebrity["last_name"]
-        dateOfBirth = celebrity["date_of_birth"]
-        dateOfDeath = celebrity["date_of_death"]
-        imagesPath = celebrity["images_path"]
-        biography = str(celebrity["biography"])
-        achievements = celebrity["achievements"]
-        industry = celebrity["industry"]
-        family = celebrity["family"]
-        associations = celebrity["associations"]
-        controversies = celebrity["controversies"]
-        discography = celebrity["discography"]
-        filmography = celebrity["filmography"]
-        genres = celebrity["genres"]
-        influence = celebrity["influence"]
-        political = celebrity["political_orientation"]
-        gender = celebrity["gender"]
-        netWorth = celebrity["net_worth"]
-
-        # Ccreate a a breif bio
-        brief_bio = biography[:100] + "..."
-        # Create the row using the celebrity data
-        rowFrame = CTkFrame(scrollFrame, width=1280, height=100)
-        rowFrame.pack(fill="x", pady=5)
-
-        # Name and DOB
-        nameAndDOBLabel = CTkLabel(rowFrame, text=f"{firstName} {lastName} - {dateOfBirth}", font=("Arial", 16))
-        nameAndDOBLabel.pack(side="left", padx=20)
-        # Biography labek
-        bioLabel = CTkLabel(rowFrame, text=brief_bio, font=("Arial", 12))
-        bioLabel.pack(side="left", padx=20)
-        # Celebrity management buttons
-        editButton = CTkButton(rowFrame, text="edit", command=lambda celeb=celebrity: createEditCelebrityFrame("Edit", celeb["first_name"], celeb["last_name"]), width=60)
-        editButton.pack(side="right", padx=10)
-
-        removeButton = CTkButton(rowFrame, text="delete", command=lambda firstName=celebrity["first_name"], lastName=celebrity["last_name"]: removeCelebrity(firstName, lastName), width=60)
-        removeButton.pack(side="right", padx=10)
-
-        # Favorite button
-        favoriteButton = CTkButton(rowFrame, text="favorite", command=None, width=60)
-        favoriteButton.pack(side="right", padx=10)
-
-        # If the user clicks on the row, show the celebrity's full info
-        rowFrame.bind("<Button-1>", lambda e, celeb=celebrity: createCelebrityFrame(celeb))
+    createCelebrityRow(celebrities, scrollFrame)
 
 # Create the sign in frame
 def createSignInFrame(signInType):
@@ -207,7 +245,7 @@ def createSignInFrame(signInType):
         else:
             successLabel = CTkLabel(signInFrame, text=successText, font=("Arial", 18), width=640, text_color="red")
             successLabel.place(relx=0.5, rely=0.3, anchor="center")
-
+    
     global signInFrame
     signInFrame = CTkFrame(app, width=1280, height=720)
     signInFrame.place(relx=0.5, rely=0.5, anchor="center")  
@@ -232,29 +270,34 @@ def createSignInFrame(signInType):
 
 # Create the edit celebrity frame
 def createEditCelebrityFrame(editType, originalFirstName=None, originalLastName=None):
-    global localImagePath
-
-    first = originalFirstName
-    last = originalLastName
-
-    def getImagePath():
-        global localImagePath
-        filePath = filedialog.askopenfilename(title="Select an Image", filetypes=[("Image Files", "*.jpg;*.jpeg;*.png;")])
-        filePathLabel = CTkLabel(editCelebrityFrame, text=f"Image: {filePath}", font=("Arial", 16))
-        filePathLabel.place(x=120, y=595)
-        celebrityName = firstNameField.get() + "_" + lastNameField.get()
-        localImagePath = functions.copy_image_to_folder(filePath, celebrityName)
+    #global localImagePath
+    # def getImagePath():
+    #     global localImagePath
+    #     filePath = filedialog.askopenfilename(title="Select an Image", filetypes=[("Image Files", "*.jpg;*.jpeg;*.png;")])
+    #     filePathLabel = CTkLabel(editCelebrityFrame, text=f"Image: {filePath}", font=("Arial", 16))
+    #     filePathLabel.place(x=120, y=595)
+    #     celebrityName = firstNameField.get() + "_" + lastNameField.get()
+    #     localImagePath = functions.copy_image_to_folder(filePath, celebrityName)
 
     def editCelebrity():
         firstName = firstNameField.get()
         lastName = lastNameField.get()
         dateOfBirth = dateOfBirthField.get()
-        imagePath = localImagePath
-
-        if not firstName or not lastName or not dateOfBirth:
-            successMessage = CTkLabel(editCelebrityFrame, text="Please fill in all fields.", font=("Arial", 16), text_color="red")
-            successMessage.place(relx=0.5, rely=0.75, anchor="center")
-            return
+        #imagePath = localImagePath
+        dateOfDeath = dateOfDeathField.get()
+        industry = industryField.get()
+        associations = associationsField.get() 
+        gender = genderDropdown.get() 
+        biography = biographyTextbox.get("1.0", "end-1c") 
+        netWorth = netWorthField.get() 
+        family = familyField.get() 
+        controversies = controversiesField.get() 
+        discography = discographyField.get() 
+        filmography = filmographyField.get() 
+        genres = genresField.get() 
+        influence = influenceField.get() 
+        political = politicalField.get() 
+        achievements = achievementsTextbox.get("1.0", "end-1c") 
 
         if editType == "Add":
             # Add the celebrity to the CSV
@@ -262,21 +305,21 @@ def createEditCelebrityFrame(editType, originalFirstName=None, originalLastName=
                 "first_name": firstName,
                 "last_name": lastName,
                 "date_of_birth": dateOfBirth,
-                "images_path": imagePath,
-                # "date_of_death" : dateOfDeath,
-                # "biography" : biography,
-                # "achievements" : achievements,
-                # "industry" : industry,
-                # "family" : family,
-                # "associations" : associations,
-                # "controversies" : controversies,
-                # "discography" : discography,
-                # "filmography" : filmography,
-                # "genres" : genres,
-                # "influence" : influence,
-                # "political_orientation" : political,
-                # "gender" : gender,
-                # "net_worth" : netWorth
+                #"images_path": imagePath,
+                "date_of_death" : dateOfDeath,
+                "biography" : biography,
+                "achievements" : achievements,
+                "industry" : industry,
+                "family" : family,
+                "associations" : associations,
+                "controversies" : controversies,
+                "discography" : discography,
+                "filmography" : filmography,
+                "genres" : genres,
+                "influence" : influence,
+                "political_orientation" : political,
+                "gender" : gender,
+                "net_worth" : netWorth
             }
 
             # Add the celebrity to the CSV
@@ -288,21 +331,50 @@ def createEditCelebrityFrame(editType, originalFirstName=None, originalLastName=
             app.after(2000, showMainFrame)
 
         elif editType == "Edit":
-            import pandas as pd
-            df = pd.read_csv("src/Data/celebrities.csv")
+            celebrities = functions.load_celebrities_file("src/Data/celebrities.csv")
             # Locate the record using the original first and last names
-            mask = (df["first_name"] == originalFirstName) & (df["last_name"] == originalLastName)
+            mask = (celebrities["first_name"] == originalFirstName) & (celebrities["last_name"] == originalLastName)
             if not mask.any():
                 errorLabel = CTkLabel(editCelebrityFrame, text="Celebrity not found.", font=("Arial", 16), text_color="red")
                 errorLabel.place(relx=0.5, rely=0.75, anchor="center")
                 return
 
-            # Update the desired fields
-            df.loc[mask, "first_name"] = firstName
-            df.loc[mask, "last_name"] = lastName
-            df.loc[mask, "date_of_birth"] = dateOfBirth
-            df.loc[mask, "images_path"] = imagePath
-            df.to_csv("src/Data/celebrities.csv", index=False)
+            # Update the record with new or existing values
+            if firstName != originalFirstName:  # Update first name
+                functions.edit_data("src/Data/celebrities.csv", "first_name", originalFirstName, "first_name", firstName)
+            if lastName != originalLastName:  # Update last name
+                functions.edit_data("src/Data/celebrities.csv", "last_name", originalLastName, "last_name", lastName)
+            if dateOfBirth:  # Update date of birth
+                functions.edit_data("src/Data/celebrities.csv", "first_name", originalFirstName, "date_of_birth", dateOfBirth)
+            if dateOfDeath:  # Update date of death
+                functions.edit_data("src/Data/celebrities.csv", "first_name", originalFirstName, "date_of_death", dateOfDeath)
+            if biography:  # Update biography
+                functions.edit_data("src/Data/celebrities.csv", "first_name", originalFirstName, "biography", biography)
+            if achievements:  # Update achievements
+                functions.edit_data("src/Data/celebrities.csv", "first_name", originalFirstName, "achievements", achievements)
+            if industry:  # Update industry
+                functions.edit_data("src/Data/celebrities.csv", "first_name", originalFirstName, "industry", industry)
+            if family:  # Update family
+                functions.edit_data("src/Data/celebrities.csv", "first_name", originalFirstName, "family", family)
+            if associations:  # Update associations
+                functions.edit_data("src/Data/celebrities.csv", "first_name", originalFirstName, "associations", associations)
+            if controversies:  # Update controversies
+                functions.edit_data("src/Data/celebrities.csv", "first_name", originalFirstName, "controversies", controversies)
+            if discography:  # Update discography
+                functions.edit_data("src/Data/celebrities.csv", "first_name", originalFirstName, "discography", discography)
+            if filmography:  # Update filmography
+                functions.edit_data("src/Data/celebrities.csv", "first_name", originalFirstName, "filmography", filmography)
+            if genres:  # Update genres
+                functions.edit_data("src/Data/celebrities.csv", "first_name", originalFirstName, "genres", genres)
+            if influence:  # Update influence
+                functions.edit_data("src/Data/celebrities.csv", "first_name", originalFirstName, "influence", influence)
+            if political:  # Update political orientation
+                functions.edit_data("src/Data/celebrities.csv", "first_name", originalFirstName, "political_orientation", political)
+            if gender:  # Update gender
+                functions.edit_data("src/Data/celebrities.csv", "first_name", originalFirstName, "gender", gender)
+            if netWorth:  # Update net worth
+                functions.edit_data("src/Data/celebrities.csv", "first_name", originalFirstName, "net_worth", netWorth)
+
             successLabel = CTkLabel(editCelebrityFrame, text=f"Successfully edited {firstName} {lastName}!", font=("Arial", 16), text_color="green")
             successLabel.place(relx=0.5, rely=0.75, anchor="center")
             app.after(2000, showMainFrame)
@@ -310,6 +382,18 @@ def createEditCelebrityFrame(editType, originalFirstName=None, originalLastName=
         else:
             print("Invalid edit type")
 
+    def createLabelAndField(label_text, x, y, fieldType="entry", options=None):
+        label = CTkLabel(editCelebrityFrame, text=label_text)
+        label.place(x=x, y=y)
+        if fieldType == "entry":
+            field = CTkEntry(editCelebrityFrame, width=150, placeholder_text=f"Enter {label_text}")
+        elif fieldType == "combo":
+            field = CTkComboBox(master=app, values=options, width=150)
+        elif fieldType == "text":
+            field = CTkTextbox(editCelebrityFrame, width=450)
+        field.place(x=x + 120, y=y)
+        return field
+    
     global editCelebrityFrame
     
     editCelebrityFrame = CTkFrame(app, width=1280, height=720)
@@ -319,136 +403,52 @@ def createEditCelebrityFrame(editType, originalFirstName=None, originalLastName=
     editLabel = CTkLabel(editCelebrityFrame, text=f"Please fill in the details to {editType} a celebrity", font=("Arial", 22))
     editLabel.place(relx=0.5, rely=0.1, anchor="center")
 
-    # ~Left Side
-    # First Name
-    firstNameLabel = CTkLabel(editCelebrityFrame, text="First Name:")
-    firstNameLabel.place(x=20, y=110)  # Place the label above the entry field
-    firstNameField = CTkEntry(editCelebrityFrame, width=150, placeholder_text="Enter First Name")
-    firstNameField.place(x=120, y=110)  # Shift the entry field to the right
+    # Left Side Fields
+    firstNameField = createLabelAndField("First Name:", 20, 110)
+    lastNameField = createLabelAndField("Last Name:", 20, 150)
+    dateOfBirthField = createLabelAndField("Date of Birth:", 20, 190)
+    dateOfDeathField = createLabelAndField("Date of Death:", 20, 230)
+    industryField = createLabelAndField("Industry:", 20, 270)
+    associationsField = createLabelAndField("Associations:", 20, 310)
+    genderDropdown = createLabelAndField("Gender:", 20, 350, fieldType="combo", options=["Male", "Female", "Other"])
+    biographyTextbox = createLabelAndField("Biography:", 20, 390, fieldType="text")
 
-    # Last Name
-    lastNameLabel = CTkLabel(editCelebrityFrame, text="Last Name:")
-    lastNameLabel.place(x=20, y=150)
-    lastNameField = CTkEntry(editCelebrityFrame, width=150, placeholder_text="Enter Last Name")
-    lastNameField.place(x=120, y=150)
+    # Right Side Fields
+    netWorthField = createLabelAndField("Net Worth:", 620, 110)
+    familyField = createLabelAndField("Family:", 620, 150)
+    controversiesField = createLabelAndField("Controversies:", 620, 190)
+    discographyField = createLabelAndField("Discography:", 620, 230)
+    filmographyField = createLabelAndField("Filmography:", 620, 270)
+    genresField = createLabelAndField("Genres:", 620, 310)
+    influenceField = createLabelAndField("Influence:", 620, 350)
+    politicalField = createLabelAndField("Political Orientation:", 620, 390)
+    achievementsTextbox = createLabelAndField("Achievements:", 620, 430, fieldType="text")
 
-    # Date of Birth
-    dateOfBirthLabel = CTkLabel(editCelebrityFrame, text="Date of Birth:")
-    dateOfBirthLabel.place(x=20, y=190)
-    dateOfBirthField = CTkEntry(editCelebrityFrame, width=150, placeholder_text="ex. October 29, 1955")
-    dateOfBirthField.place(x=120, y=190)
-
-    # Date of Death
-    dateOfDeathLabel = CTkLabel(editCelebrityFrame, text="Date of Death:")
-    dateOfDeathLabel.place(x=20, y=230)
-    dateOfDeathField = CTkEntry(editCelebrityFrame, width=150, placeholder_text="ex. June 12, 2022")
-    dateOfDeathField.place(x=120, y=230)
-
-    # Industry
-    industryLabel = CTkLabel(editCelebrityFrame, text="Industry:")
-    industryLabel.place(x=20, y=270)
-    industryField = CTkEntry(editCelebrityFrame, width=150, placeholder_text="Enter Industry")
-    industryField.place(x=120, y=270)
-
-    # Associations
-    associationsLabel = CTkLabel(editCelebrityFrame, text="Associations:")
-    associationsLabel.place(x=20, y=310)
-    associationsField = CTkEntry(editCelebrityFrame, width=150, placeholder_text="Enter Associations")
-    associationsField.place(x=120, y=310)
-
-    # Gender
-    genderLabel = CTkLabel(editCelebrityFrame, text="Gender:")
-    genderLabel.place(x=20, y=350)
-    genderField = CTkComboBox(master=app, values=["Male", "Female", "Other"], width=150)
-    genderField.place(x=120, y=350)
-
-    # Biography
-    biographyLabel = CTkLabel(editCelebrityFrame, text="Biography:")
-    biographyLabel.place(x=20, y=390)
-    biographyField = CTkTextbox(editCelebrityFrame, width=450)
-    biographyField.place(x=120, y=390)
-
-    # Image
-    imageSelectButton = CTkButton(editCelebrityFrame, width=100, text="Select Image", command=getImagePath, font=("Arial", 16), fg_color=colorPalette["darkGray"], hover_color=colorPalette["lightGray"])
-    imageSelectButton.place(x=250, rely=0.9)
-
-
-    #Right side
-    # Net Worth
-    netWorthLabel = CTkLabel(editCelebrityFrame, text="Net Worth:")
-    netWorthLabel.place(x=620, y=110)
-    netWorthField = CTkEntry(editCelebrityFrame, width=200, placeholder_text="Enter Net Worth")
-    netWorthField.place(x=750, y=110)
-
-    # Family
-    familyField = CTkLabel(editCelebrityFrame, text="Family:")
-    familyField.place(x=620, y=150)
-    familyField = CTkEntry(editCelebrityFrame, width=200, placeholder_text="Enter Family")
-    familyField.place(x=750, y=150)
-
-    # Controversies
-    controversiesLabel = CTkLabel(editCelebrityFrame, text="Controversies:")
-    controversiesLabel.place(x=620, y=190)
-    controversiesField = CTkEntry(editCelebrityFrame, width=200, placeholder_text="Enter Controversies")
-    controversiesField.place(x=750, y=190)
-
-    # Discography
-    discographyLabel = CTkLabel(editCelebrityFrame, text="Controversies:")
-    discographyLabel.place(x=620, y=230)
-    discographyField = CTkEntry(editCelebrityFrame, width=200, placeholder_text="Enter Discography")
-    discographyField.place(x=750, y=230)
-
-    # Films
-    filmographyLabel = CTkLabel(editCelebrityFrame, text="Filmography:")
-    filmographyLabel.place(x=620, y=270)
-    filmographyField = CTkEntry(editCelebrityFrame, width=200, placeholder_text="Enter Filmography")
-    filmographyField.place(x=750, y=270)
-
-    # Genre
-    genresLabel = CTkLabel(editCelebrityFrame, text="Genres:")
-    genderLabel.place(x=620, y=310)
-    genresField = CTkEntry(editCelebrityFrame, width=200, placeholder_text="Enter Genres")
-    genresField.place(x=750, y=310)
-
-    # Influence
-    influenceLabel = CTkLabel(editCelebrityFrame, text="Influcence:")
-    influenceLabel.place(x=620, y=350)
-    influenceField = CTkEntry(editCelebrityFrame, width=200, placeholder_text="Enter Influence")
-    influenceField.place(x=750, y=350)
-
-    # Politics
-    politicalLabel = CTkLabel(editCelebrityFrame, text="Political Orientation:")
-    politicalLabel.place(x=620, y=390)
-    politicalField = CTkEntry(editCelebrityFrame, width=200, placeholder_text="Enter Political Orientation")
-    politicalField.place(x=750, y=390)
-
-    # Achievements
-    achievementsLabel = CTkLabel(editCelebrityFrame, text="Achievements:")
-    achievementsLabel.place(x=620, y=430)
-    achievementsField = CTkTextbox(editCelebrityFrame, width=500)
-    achievementsField.place(x=750, y=430)
-
-    # Pre-populate fields if we are editing
-    if editType == "Edit" and first and last:
+    # Pre-populate fields if editing
+    if editType == "Edit" and (originalFirstName != None) and (originalLastName != None):
         celebrities = functions.load_celebrities_file("src/Data/celebrities.csv")
-        celeb = next((c for c in celebrities if c["first_name"] == first and c["last_name"] == last), None)
+        celeb = next((c for c in celebrities if c["first_name"] == originalFirstName and c["last_name"] == originalLastName), None)
         if celeb:
             firstNameField.insert(0, celeb.get("first_name", ""))
             lastNameField.insert(0, celeb.get("last_name", ""))
             dateOfBirthField.insert(0, celeb.get("date_of_birth", ""))
-            # You can similarly pre-populate additional fields if needed
-
-    # The submit button text changes based on the mode
-    submitButton = CTkButton(
-        editCelebrityFrame,
-        text="Add Celebrity" if editType == "Add" else "Edit Celebrity",
-        command=editCelebrity,
-        width=100,
-        font=("Arial", 16)
-    )
+            dateOfDeathField.insert(0, celeb.get("date_of_death", ""))
+            industryField.insert(0, celeb.get("industry", ""))
+            associationsField.insert(0, celeb.get("associations", ""))
+            genderDropdown.set(celeb.get("gender", ""))  
+            biographyTextbox.insert("1.0", celeb.get("biography", ""))
+            netWorthField.insert(0, celeb.get("net_worth", ""))
+            familyField.insert(0, celeb.get("family", ""))
+            controversiesField.insert(0, celeb.get("controversies", ""))
+            discographyField.insert(0, celeb.get("discography", ""))
+            filmographyField.insert(0, celeb.get("filmography", ""))
+            genresField.insert(0, celeb.get("genres", ""))
+            influenceField.insert(0, celeb.get("influence", ""))
+            politicalField.insert(0, celeb.get("political_orientation", ""))
+            achievementsTextbox.insert("1.0", celeb.get("achievements", ""))
 
     # Submit button to add celebrity
-    submitButton = CTkButton(editCelebrityFrame, text="Add Celebrity", command=editCelebrity, width=100, font=("Arial", 16), fg_color=colorPalette["darkGray"], hover_color=colorPalette["lightGray"])
+    submitButton = CTkButton(editCelebrityFrame, text="Add Celebrity" if editType == "Add" else "Edit Celebrity", command=editCelebrity, width=100, font=("Arial", 16), fg_color=colorPalette["darkGray"], hover_color=colorPalette["lightGray"])
     submitButton.place(relx=0.5, rely=0.9, anchor="center")
 
     # Go back to main menu
@@ -460,16 +460,68 @@ def createCelebrityFrame(celebrity):
     celebrityFrame = CTkFrame(app, width=1280, height=720)
     celebrityFrame.pack(fill="both", expand=True)
     
-    # Display full details. For each key in the celebrity dictionary, create a label:
-    row = 0
-    for key, value in celebrity.items():
-        label = CTkLabel(celebrityFrame, text=f"{key}: {value}", font=("Arial", 14))
-        label.grid(row=row, column=0, sticky="w", padx=20, pady=5)
-        row += 1
-    
+    # Display full details
+    celebrityLabel = CTkLabel(celebrityFrame, text=celebrity["first_name"])
+    celebrityLabel.place(relx=0.5, rely=0.5, anchor="center")
     # Add a "Back" button to return to the main view
-    backButton = CTkButton(celebrityFrame, text="Back", font=("Arial", 14), command=showMainFrame, fg_color=colorPalette["darkGray"], hover_color=colorPalette["lightGray"])
-    backButton.grid(row=row, column=0, pady=20)
+    backButton = CTkButton(celebrityFrame, text="Back", font=("Arial", 16), command=showMainFrame, fg_color=colorPalette["darkGray"], hover_color=colorPalette["lightGray"])
+    backButton.place(relx=0.05, rely=0.05, anchor="center")
+
+def createFilterFrame():
+    def filterCelebrities():
+        global scrollFrame
+        # Capture filter selections
+        selected_filters = {k: v.get() for k, v in fields.items() if v.get() == "on"}
+        print("Selected Filters:", selected_filters)
+        
+        # Load celebrities data
+        celebrities = functions.load_celebrities_file("src/Data/celebrities.csv")
+
+        # Apply filter logic
+        filteredCelebrities = [celeb for celeb in celebrities if all(str(celeb.get(key, "")).lower() != "" for key in selected_filters)]
+
+        showMainFrame()
+        # Display filtered results
+        createCelebrityRow(filteredCelebrities, scrollFrame)
+        
+    fields = {
+        "first_name": StringVar(),
+        "last_name": StringVar(),
+        "date_of_birth": StringVar(),
+        "date_of_death": StringVar(),
+        "biography": StringVar(),
+        "achievements": StringVar(),
+        "industry": StringVar(),
+        "family": StringVar(),
+        "associations": StringVar(),
+        "controversies": StringVar(),
+        "discography": StringVar(),
+        "filmography": StringVar(),
+        "genres": StringVar(),
+        "influence": StringVar(),
+        "political_orientation": StringVar(),
+        "gender": StringVar(),
+        "net_worth": StringVar()
+    }
+
+    def checkbox_event(var, label):
+        print(f"Checkbox for {label} toggled, current value:", var.get())
+    
+    global filterFrame
+    filterFrame = CTkFrame(app, width=1280, height=720)
+    filterFrame.pack(fill="both", expand=True)
+    
+    # Loop through the dictionary to create a checkbox for each item
+    for idx, (label, var) in enumerate(fields.items()):
+        checkbox = CTkCheckBox(filterFrame, text=label.replace("_", " ").title(), command=lambda var=var, label=label: checkbox_event(var, label), variable=var, onvalue="on", offvalue="off")
+        checkbox.place(x=200, y=50 + idx * 40, anchor="w")
+    # Add a "Back" button to return to the main view
+    backButton = CTkButton(filterFrame, text="Home", font=("Arial", 16), command=showMainFrame, fg_color=colorPalette["darkGray"], hover_color=colorPalette["lightGray"])
+    backButton.place(relx=0.05, rely=0.05, anchor="center")
+
+    # Submit button to add celebrity
+    submitButton = CTkButton(filterFrame, text="Filter Search", command=lambda: filterCelebrities(), width=100, font=("Arial", 16), fg_color=colorPalette["darkGray"], hover_color=colorPalette["lightGray"])
+    submitButton.place(relx=0.8, rely=0.5, anchor="center")
 
 createMainFrame()
 
