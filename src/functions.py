@@ -1,9 +1,6 @@
 # Functions that deal with the csv files
 
-import csv
-import numpy as np
 import pandas as pd
-import datetime
 import os
 import shutil
 
@@ -40,14 +37,14 @@ def edit_data(file_path, identifier_col, identifier_value, column_to_edit, new_v
 
 
 # Example Usage:
-edit_data("src/data/celebrities.csv", "first_name", "Bill", "date_of_birth", "October 29, 1955")
+#edit_data("src/data/celebrities.csv", "first_name", "Bill", "date_of_birth", "October 29, 1955")
 
 
 def add_data(file_path,new_data):
     df = pd.read_csv(file_path)
 
     # Check if the entry already exists
-    mask = (df['first_name'] == new_data['first_name']) & (df['last_name'] == new_data['last_name']) & (df['date_of_birth'] == new_data['date_of_birth']) & (df['images_path'] == new_data['images_path'])
+    mask = (df['first_name'] == new_data['first_name']) & (df['last_name'] == new_data['last_name']) & (df['date_of_birth'] == new_data['date_of_birth'])
 
     if mask.any():
         print(f"Entry for {new_data['first_name']} {new_data['last_name']} already exists.")
@@ -119,10 +116,16 @@ def copy_image_to_folder(image_path, celebrity_name):
 
 def load_celebrities_file(csv_file):
     # Load celebrities directly from the CSV into a DataFrame
-    df = pd.read_csv(csv_file, usecols=['first_name', 'last_name', 'date_of_birth', 'images_path'])
+    df = pd.read_csv(csv_file, encoding="utf-8")
     # Convert the DataFrame to a list of dictionaries
     celebrities = df.to_dict(orient='records')
     return celebrities
+
+#^ Filter Function
+def filter_by_tag(csv_file, column, search_string):
+    df = pd.read_csv(csv_file) # create dataframe
+    filtered_df = df[df[column].astype(str).str.contains(search_string, na=False, case=False)] # create the filtered dataframe
+    return filtered_df # return the filtered dataframe
 
 # def filter_data(tag):
 #     return #data which matches the tag
