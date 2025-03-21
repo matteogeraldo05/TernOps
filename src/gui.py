@@ -156,7 +156,7 @@ def createMainFrame(filteredCelebrities=None):
                     filteredCelebrities.append(celeb)
             createCelebrityRow(filteredCelebrities, scrollFrame)
         else:
-            pass
+            createCelebrityRow(celebrities, scrollFrame)
 
     global mainFrame, userAccount, scrollFrame
 
