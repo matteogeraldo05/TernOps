@@ -337,8 +337,10 @@ def createEditCelebrityFrame(editType, originalFirstName=None, originalLastName=
         elif editType == "Edit":
             celebrities = functions.load_celebrities_file("src/Data/celebrities.csv")
             # Locate the record using the original first and last names
-            mask = (celebrities["first_name"] == originalFirstName) & (celebrities["last_name"] == originalLastName)
-            if not mask.any():
+            # Locate the matching celebrity using next()
+            celeb = next((c for c in celebrities if c.get("first_name") == originalFirstName and c.get("last_name") == originalLastName), None)
+
+            if not celeb:
                 errorLabel = CTkLabel(editCelebrityFrame, text="Celebrity not found.", font=("Arial", 16), text_color="red")
                 errorLabel.place(relx=0.5, rely=0.75, anchor="center")
                 return
