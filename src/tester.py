@@ -12,9 +12,10 @@ class TestCelebrityBioApp(unittest.TestCase):
         self.test_csv = 'test_celebrity_data.csv'
         with open(self.test_csv, 'w', newline='') as file:
             writer = csv.writer(file)
-            writer.writerow(['First_Name', 'Last_Name', 'date_of_birth', 'images_path'])
+            writer.writerow(['first_Name', 'last_Name', 'date_of_birth', 'images_path'])
             writer.writerow(['John', 'Doe', 'July 8, 2001', 'path/to/image.jpg'])
-        self.app = CTk()
+        
+        
 
     def tearDown(self):
         """Remove the test CSV file after testing."""
@@ -23,14 +24,13 @@ class TestCelebrityBioApp(unittest.TestCase):
 
     def test_add_celebrity(self):
         """Test adding a new celebrity."""
-        self.app.createEditCelebrityFrame("Add")
         celebrityData = {
                 "first_name": 'Jane',
                 "last_name": 'Smith',
                 "date_of_birth": 'April, 15, 1993',
                 "images_path": 'path/to/image2.jpg'
             }
-        self.app.add_data(self.test_csv, celebrityData)
+        add_data(self.test_csv, celebrityData)
 
 
         with open(self.test_csv, 'r') as file:
@@ -42,7 +42,7 @@ class TestCelebrityBioApp(unittest.TestCase):
 
     def test_edit_celebrity(self):
         """Test editing an existing celebrity."""
-        self.app.edit_data('John', 'Doe', 'June 10, 2001', 'path/to/new_image.jpg')
+        edit_data('path/to/new_image.jpg', 'first_name', 'John', 'date_of_birth', 'June 10, 2001')
 
         with open(self.test_csv, 'r') as file:
             reader = csv.reader(file)
@@ -51,7 +51,7 @@ class TestCelebrityBioApp(unittest.TestCase):
 
     def test_delete_celebrity(self):
         """Test deleting a celebrity."""
-        self.app.delete_data(self.test_csv, 'John', 'Doe')
+        delete_data(self.test_csv, 'John', 'Doe')
 
         with open(self.test_csv, 'r') as file:
             reader = csv.reader(file)
@@ -60,12 +60,12 @@ class TestCelebrityBioApp(unittest.TestCase):
 
     def test_login(self):
         """Test login functionality."""
-        result = login("Rio", 321, self.test_csv)
+        result = login("Rio", 321, 'src/Data/accountInfo.csv')
         self.assertTrue(result)
 
     def test_register(self):
         """Test registration functionality."""        
-        result = register_user("Rio", 321, False, self.test_csv)
+        result = register_user("Rio", 321, True, 'src/Data/accountInfo.csv')
         self.assertTrue(result)
 
 if __name__ == '__main__':

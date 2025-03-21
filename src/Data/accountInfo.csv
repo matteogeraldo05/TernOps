@@ -2,3 +2,4 @@ user_name,password,is_admin
 matteo,abc,False
 ryan,123,False
 matteo1,abc,False
+Rio,321,True
