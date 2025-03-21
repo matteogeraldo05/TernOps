@@ -121,6 +121,12 @@ def load_celebrities_file(csv_file):
     celebrities = df.to_dict(orient='records')
     return celebrities
 
+#^ Filter Function
+def filter_by_tag(csv_file, column, search_string):
+    df = pd.read_csv(csv_file) # create dataframe
+    filtered_df = df[df[column].astype(str).str.contains(search_string, na=False, case=False)] # create the filtered dataframe
+    return filtered_df # return the filtered dataframe
+
 # def filter_data(tag):
 #     return #data which matches the tag
 
