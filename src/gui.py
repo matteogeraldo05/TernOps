@@ -41,9 +41,9 @@ def hideAllFrames():
         filterFrame.pack_forget()
 
 # Show the main frame
-def showMainFrame():
+def showMainFrame(filteredCelebrities=None):
     hideAllFrames()
-    createMainFrame()
+    createMainFrame(filteredCelebrities)
     mainFrame.pack(fill="both", expand=True)
 
 # Show the login frame
@@ -137,7 +137,7 @@ def createCelebrityRow(celebrities, scrollFrame):
 #------------------------------------------FUNCTIONS TO BE MOVED------------------------------------------------
 
 # Create the favorites frame
-def createMainFrame():
+def createMainFrame(filteredCelebrities=None):
     def logoutAndShowMain():
         global userAccount
         userAccount = accounts.Guest() #todo
@@ -216,8 +216,12 @@ def createMainFrame():
     scrollFrame = CTkScrollableFrame(mainFrame, width=1280, height=660)
     scrollFrame.pack(fill="both")
 
-    # Load the celebrities from CSV file
-    celebrities = functions.load_celebrities_file("src/Data/celebrities.csv")
+    # Load all celebrities if no filter applied
+    if filteredCelebrities is None:
+        celebrities = functions.load_celebrities_file("src/Data/celebrities.csv")
+    else:
+        celebrities = filteredCelebrities
+
 
     # Create a row for each celebrity in the CSV file
     createCelebrityRow(celebrities, scrollFrame)
@@ -480,9 +484,7 @@ def createFilterFrame():
         # Apply filter logic
         filteredCelebrities = [celeb for celeb in celebrities if all(str(celeb.get(key, "")).lower() != "" for key in selected_filters)]
 
-        showMainFrame()
-        # Display filtered results
-        createCelebrityRow(filteredCelebrities, scrollFrame)
+        return filteredCelebrities
         
     fields = {
         "first_name": StringVar(),
@@ -520,7 +522,7 @@ def createFilterFrame():
     backButton.place(relx=0.05, rely=0.05, anchor="center")
 
     # Submit button to add celebrity
-    submitButton = CTkButton(filterFrame, text="Filter Search", command=lambda: filterCelebrities(), width=100, font=("Arial", 16), fg_color=colorPalette["darkGray"], hover_color=colorPalette["lightGray"])
+    submitButton = CTkButton(filterFrame, text="Filter Search", command=lambda: showMainFrame(filterCelebrities()), width=100, font=("Arial", 16), fg_color=colorPalette["darkGray"], hover_color=colorPalette["lightGray"])
     submitButton.place(relx=0.8, rely=0.5, anchor="center")
 
 createMainFrame()
