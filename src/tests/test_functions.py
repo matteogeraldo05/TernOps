@@ -55,7 +55,7 @@ def test_add_data_entry_exists():
     new_data = {
         "first_name": "John", 
         "last_name": "Doe", 
-        "date_of_birth": "1990-01-01", 
+        "date_of_birth": "June 16, 2005", 
         "date_of_death": "", 
         "achievements": "", 
         "industry": "", 
