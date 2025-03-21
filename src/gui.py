@@ -57,9 +57,9 @@ def showEditCelebrityFrame():
     createEditCelebrityFrame()
 
 # Show the celebrity frame
-def showCelebrityFrame():
+def showCelebrityFrame(celebrity=None):
     hideAllFrames()
-    createCelebrityFrame()
+    createCelebrityFrame(celebrity)
 
 # Show the filter frame
 def showFilterFrame():
@@ -94,7 +94,7 @@ def createCelebrityRow(celebrities, scrollFrame):
         brief_bio = biography[:300] + "..."
 
         # Create the row using the celebrity data
-        rowFrame = CTkFrame(scrollFrame, width=1280, height=150, fg_color=colorPalette["darkGray"], cursor="hand2")
+        rowFrame = CTkFrame(scrollFrame, width=1280, height=150, fg_color=colorPalette["darkGray"])
         rowFrame.pack(fill="x", pady=5)
 
         # TODO Image
@@ -122,7 +122,7 @@ def createCelebrityRow(celebrities, scrollFrame):
         favoriteButton = CTkButton(buttonFrame, text="Favorite", command=None, width=60)
         favoriteButton.grid(row=0, column=0, pady=5)
         # Learn more button
-        LearnMoreButton = CTkButton(buttonFrame, text="Learn More", command=lambda: showCelebrityFrame(), width=60)
+        LearnMoreButton = CTkButton(buttonFrame, text="Learn More", command=lambda celeb=celebrity: showCelebrityFrame(celeb), width=60)
         LearnMoreButton.grid(row=1, column=0, pady=5)
         # Edit button
         editButton = CTkButton(buttonFrame, text="Edit", command=lambda celeb=celebrity: createEditCelebrityFrame("Edit", celeb["first_name"], celeb["last_name"]), width=60)
@@ -459,33 +459,20 @@ def createEditCelebrityFrame(editType, originalFirstName=None, originalLastName=
     backButton = CTkButton(editCelebrityFrame, text="Home", command=showMainFrame, width=60, font=("Arial", 16), fg_color=colorPalette["darkGray"], hover_color=colorPalette["lightGray"])
     backButton.place(relx=0.05, rely=0.05, anchor="center")
 
-def createCelebrityFrame(celebrity):
+def createCelebrityFrame(celebrity=None):
     global celebrityFrame
     celebrityFrame = CTkFrame(app, width=1280, height=720)
     celebrityFrame.pack(fill="both", expand=True)
     
     # Display full details
-    celebrityLabel = CTkLabel(celebrityFrame, text=celebrity["first_name"])
+    celebrityLabel = CTkLabel(celebrityFrame, text=f"{celebrity['first_name']} {celebrity['last_name']}", font=("Helvetica", 30))
     celebrityLabel.place(relx=0.5, rely=0.5, anchor="center")
     # Add a "Back" button to return to the main view
     backButton = CTkButton(celebrityFrame, text="Back", font=("Arial", 16), command=showMainFrame, fg_color=colorPalette["darkGray"], hover_color=colorPalette["lightGray"])
     backButton.place(relx=0.05, rely=0.05, anchor="center")
 
 def createFilterFrame():
-    def filterCelebrities():
-        global scrollFrame
-        # Capture filter selections
-        selected_filters = {k: v.get() for k, v in fields.items() if v.get() == "on"}
-        print("Selected Filters:", selected_filters)
-        
-        # Load celebrities data
-        celebrities = functions.load_celebrities_file("src/Data/celebrities.csv")
-
-        # Apply filter logic
-        filteredCelebrities = [celeb for celeb in celebrities if all(str(celeb.get(key, "")).lower() != "" for key in selected_filters)]
-
-        return filteredCelebrities
-        
+    # Create a dictionary of fields with StringVar for each filter.
     fields = {
         "first_name": StringVar(),
         "last_name": StringVar(),
@@ -505,6 +492,21 @@ def createFilterFrame():
         "gender": StringVar(),
         "net_worth": StringVar()
     }
+
+    # check which filters are enabled and add celebs
+    def filterCelebrities():
+        import pandas as pd
+        selected_filters = {key for key, var in fields.items() if var.get() == "on"}
+        print("Selected Filters:", selected_filters)
+
+        # Load all celebrity data
+        celebrities = functions.load_celebrities_file("src/Data/celebrities.csv")
+
+        # Apply filters to check if fields are non-empty and not NaN
+        filteredCelebrities = [celeb for celeb in celebrities if all(pd.notna(celeb.get(key)) and str(celeb[key]).strip() for key in selected_filters)]
+
+        print(f"Filtered Celebrities: {len(filteredCelebrities)} found")
+        return filteredCelebrities
 
     def checkbox_event(var, label):
         print(f"Checkbox for {label} toggled, current value:", var.get())
