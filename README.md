@@ -32,24 +32,43 @@ The project is a catalogue of celebrity biographies, which will help users under
 
 ### Basic setup to run the MVP:
 
+**To automatically run MVP using Git Bash, follow the steps below:** 
+
 1. **Clone the Repository**<br>
-   Clone this repository to your local machine using,<br>
+   Open a termianl and clone this repository to your local machine using the command:<br>
    ```bash
    git clone <repository-url>
 
-3. **Open the Repository**<br>
+2. **Open the Repository in terminal**<br>
+   Navigate to the project folder and open it in your terminal by the following command:<br>
+   ```bash
+   cd <repository name>
+
+3. **Launch the MVP**<br>
+   In the terminal and run the following command to launch the MVP and automatically install all necessary libraries and install the required dependencies (it may take some time to run the MVP based on if your computer already has the necessary requirments or not):<br>
+   ```bash
+   ./build.sh
+
+**To manually run MVP, follow the steps below:** 
+
+1. **Clone the Repository**<br>
+   Clone this repository to your local machine using:<br>
+   ```bash
+   git clone <repository-url>
+
+2. **Open the Repository in terminal**<br>
    Navigate to the project folder and open it in your preferred IDE.
 
-4. **Install Dependencies**<br>
-   Open a terminal and run the following command to install the required rependencies,<br>
+3. **Install Dependencies**<br>
+   Open a terminal and run the following command to install the required dependencies:<br>
    ```bash
    pip install -r requirements.txt
 
-5. **Import Necessary Libraries**<br>
-   this will automatically install all the necessary libraries for the MVP to run.
+4. **Import Necessary Libraries**<br>
+   This will automatically install all the necessary libraries for the MVP to run.
 
-6. **Run the GUI**<br>
+5. **Run the GUI**<br>
    Locate and open the **`gui.py`** file under the **`src`** folder.
 
-7. **Launch the MVP**<br>
+6. **Launch the MVP**<br>
    Run the **`gui.py`** file to start the MVP application.
