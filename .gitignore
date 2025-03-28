@@ -1,5 +1,6 @@
 # Python Bytecode
 __pycache__/
+*.pyc
 
 # Virtual environments
 venv/
@@ -15,4 +16,4 @@ venv/
 #Images/
 #*.png
 #*.jpg
-#*.jpeg    
+#*.jpeg
