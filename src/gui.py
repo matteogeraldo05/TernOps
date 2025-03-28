@@ -283,7 +283,7 @@ def createEditCelebrityFrame(editType, originalFirstName=None, originalLastName=
     #     filePathLabel.place(x=120, y=595)
     #     celebrityName = firstNameField.get() + "_" + lastNameField.get()
     #     localImagePath = functions.copy_image_to_folder(filePath, celebrityName)
-
+    
     def editCelebrity():
         firstName = firstNameField.get()
         lastName = lastNameField.get()
@@ -303,8 +303,18 @@ def createEditCelebrityFrame(editType, originalFirstName=None, originalLastName=
         influence = influenceField.get() 
         political = politicalField.get() 
         achievements = achievementsTextbox.get("1.0", "end-1c") 
-
+       
+        #Initialize errorMessage
+        errorMessage = None
+        
         if editType == "Add":
+            # Check if the required fields are filled
+            if not firstNameField.get().strip() or not lastNameField.get().strip() or not industryField.get().strip():
+                errorMessage  = CTkLabel(editCelebrityFrame, text="Please make sure First Name, Last Name, and Industry are filled", font=("Arial", 16), text_color="red")
+                errorMessage.place(relx=0.5, rely=0.75, anchor="center")
+                app.after(2000, lambda: errorMessage.destroy())
+                return
+        
             # Add the celebrity to the CSV
             celebrityData = {
                 "first_name": firstName,
@@ -471,83 +481,35 @@ def createCelebrityFrame(celebrity=None):
     celebrityLabel = CTkLabel(celebrityFrame, text=f"{celebrity['first_name']} {celebrity['last_name']}", font=("Helvetica", 30))
     celebrityLabel.place(relx=0.5, rely=0.05, anchor="center")
 
-    # Display biography
-    biographyLabel = CTkLabel(celebrityFrame, text="Biography:", font=("Helvetica", 18))
-    biographyLabel.place(relx=0.05, rely=0.15, anchor="w")
-    biographyText = CTkLabel(celebrityFrame, text=celebrity['biography'], font=("Helvetica", 14), wraplength=1200, justify="left")
-    biographyText.place(relx=0.05, rely=0.2, anchor="w")
+    # List of attributes to display (label text, corresponding dictionary key, initial rely position)
+    info = [
+        ("Biography", 'biography', 0.15),
+        ("Achievements", 'achievements', 0.35),
+        ("Net Worth", 'net_worth', 0.45),
+        ("Industry", 'industry', 0.55),
+        ("Family", 'family', 0.65),
+        ("Associations", 'associations', 0.75),
+        ("Controversies", 'controversies', 0.85),
+    ]
+    
+    # Loop through the information to create labels and text for each section
+    for label_text, key, rely in info:
+        CTkLabel(celebrityFrame, text=f"{label_text}:", font=("Helvetica", 18)).place(relx=0.05, rely=rely, anchor="w")
+        CTkLabel(celebrityFrame, text=celebrity[key], font=("Helvetica", 14), wraplength=1200, justify="left").place(relx=0.05, rely=rely+0.05, anchor="w")
 
-    # Display achievements
-    achievementsLabel = CTkLabel(celebrityFrame, text="Achievements:", font=("Helvetica", 18))
-    achievementsLabel.place(relx=0.05, rely=0.35, anchor="w")
-    achievementsText = CTkLabel(celebrityFrame, text=celebrity['achievements'], font=("Helvetica", 14), wraplength=1200, justify="left")
-    achievementsText.place(relx=0.05, rely=0.4, anchor="w")
+    # Filmography, Discography, Genres, Influence, Political Orientation, Gender
+    media_info = [
+        ("Filmography", 'filmography', 0.35),
+        ("Discography", 'discography', 0.45),
+        ("Genres", 'genres', 0.55),
+        ("Influence", 'influence', 0.65),
+        ("Political Orientation", 'political_orientation', 0.75),
+        ("Gender", 'gender', 0.85),
+    ]
 
-    # Display net worth
-    netWorthLabel = CTkLabel(celebrityFrame, text="Net Worth:", font=("Helvetica", 18))
-    netWorthLabel.place(relx=0.05, rely=0.45, anchor="w")
-    netWorthText = CTkLabel(celebrityFrame, text=celebrity['net_worth'], font=("Helvetica", 14))
-    netWorthText.place(relx=0.05, rely=0.5, anchor="w")
-
-    # Display industry
-    industryLabel = CTkLabel(celebrityFrame, text="Industry:", font=("Helvetica", 18))
-    industryLabel.place(relx=0.05, rely=0.55, anchor="w")
-    industryText = CTkLabel(celebrityFrame, text=celebrity['industry'], font=("Helvetica", 14))
-    industryText.place(relx=0.05, rely=0.6, anchor="w")
-
-    # Display family
-    familyLabel = CTkLabel(celebrityFrame, text="Family:", font=("Helvetica", 18))
-    familyLabel.place(relx=0.05, rely=0.65, anchor="w")
-    familyText = CTkLabel(celebrityFrame, text=celebrity['family'], font=("Helvetica", 14))
-    familyText.place(relx=0.05, rely=0.7, anchor="w")
-
-    # Display associations
-    associationsLabel = CTkLabel(celebrityFrame, text="Associations:", font=("Helvetica", 18))
-    associationsLabel.place(relx=0.05, rely=0.75, anchor="w")
-    associationsText = CTkLabel(celebrityFrame, text=celebrity['associations'], font=("Helvetica", 14), wraplength=1200, justify="left")
-    associationsText.place(relx=0.05, rely=0.8, anchor="w")
-
-    # Display controversies
-    controversiesLabel = CTkLabel(celebrityFrame, text="Controversies:", font=("Helvetica", 18))
-    controversiesLabel.place(relx=0.05, rely=0.85, anchor="w")
-    controversiesText = CTkLabel(celebrityFrame, text=celebrity['controversies'], font=("Helvetica", 14), wraplength=1200, justify="left")
-    controversiesText.place(relx=0.05, rely=0.9, anchor="w")
-
-    # Display filmography
-    filmographyLabel = CTkLabel(celebrityFrame, text="Filmography:", font=("Helvetica", 18))
-    filmographyLabel.place(relx=0.5, rely=0.35, anchor="w")
-    filmographyText = CTkLabel(celebrityFrame, text=celebrity['filmography'], font=("Helvetica", 14), wraplength=600, justify="left")
-    filmographyText.place(relx=0.5, rely=0.4, anchor="w")
-
-    # Display discography
-    discographyLabel = CTkLabel(celebrityFrame, text="Discography:", font=("Helvetica", 18))
-    discographyLabel.place(relx=0.5, rely=0.45, anchor="w")
-    discographyText = CTkLabel(celebrityFrame, text=celebrity['discography'], font=("Helvetica", 14), wraplength=600, justify="left")
-    discographyText.place(relx=0.5, rely=0.5, anchor="w")
-
-    # Display genres
-    genresLabel = CTkLabel(celebrityFrame, text="Genres:", font=("Helvetica", 18))
-    genresLabel.place(relx=0.5, rely=0.55, anchor="w")
-    genresText = CTkLabel(celebrityFrame, text=celebrity['genres'], font=("Helvetica", 14))
-    genresText.place(relx=0.5, rely=0.6, anchor="w")
-
-    # Display influence
-    influenceLabel = CTkLabel(celebrityFrame, text="Influence:", font=("Helvetica", 18))
-    influenceLabel.place(relx=0.5, rely=0.65, anchor="w")
-    influenceText = CTkLabel(celebrityFrame, text=celebrity['influence'], font=("Helvetica", 14))
-    influenceText.place(relx=0.5, rely=0.7, anchor="w")
-
-    # Display political orientation
-    politicalLabel = CTkLabel(celebrityFrame, text="Political Orientation:", font=("Helvetica", 18))
-    politicalLabel.place(relx=0.5, rely=0.75, anchor="w")
-    politicalText = CTkLabel(celebrityFrame, text=celebrity['political_orientation'], font=("Helvetica", 14))
-    politicalText.place(relx=0.5, rely=0.8, anchor="w")
-
-    # Display gender
-    genderLabel = CTkLabel(celebrityFrame, text="Gender:", font=("Helvetica", 18))
-    genderLabel.place(relx=0.5, rely=0.85, anchor="w")
-    genderText = CTkLabel(celebrityFrame, text=celebrity['gender'], font=("Helvetica", 14))
-    genderText.place(relx=0.5, rely=0.9, anchor="w")
+    for label_text, key, rely in media_info:
+        CTkLabel(celebrityFrame, text=f"{label_text}:", font=("Helvetica", 18)).place(relx=0.5, rely=rely, anchor="w")
+        CTkLabel(celebrityFrame, text=celebrity[key], font=("Helvetica", 14), wraplength=600, justify="left").place(relx=0.5, rely=rely+0.05, anchor="w")
 
     # Add a "Back" button to return to the main view
     backButton = CTkButton(celebrityFrame, text="Back", font=("Arial", 16), command=showMainFrame, fg_color=colorPalette["darkGray"], hover_color=colorPalette["lightGray"])

@@ -80,21 +80,21 @@ def delete_data(file_path, first_name, last_name):
     df.to_csv(file_path, index=False)
 
    # Check if the path is a file or folder
-    if os.path.exists(images_path):
-        if os.path.isdir(images_path):
-            # If it's a directory remove it
-            try:
-                shutil.rmtree(images_path)
-                print(f"Successfully deleted image folder: {images_path}")
-            except Exception as e:
-                print(f"Error deleting image folder: {e}")
-        elif os.path.isfile(images_path):
-            # If it's a file remove it
-            try:
-                os.remove(images_path)
-                print(f"Successfully deleted image file: {images_path}")
-            except Exception as e:
-                print(f"Error deleting image file: {e}")
+    # if os.path.exists(images_path):
+    #     if os.path.isdir(images_path):
+    #         # If it's a directory remove it
+    #         try:
+    #             shutil.rmtree(images_path)
+    #             print(f"Successfully deleted image folder: {images_path}")
+    #         except Exception as e:
+    #             print(f"Error deleting image folder: {e}")
+    #     elif os.path.isfile(images_path):
+    #         # If it's a file remove it
+    #         try:
+    #             os.remove(images_path)
+    #             print(f"Successfully deleted image file: {images_path}")
+    #         except Exception as e:
+    #             print(f"Error deleting image file: {e}")
 
     # Print a success message
     print(f"Successfully deleted the entry for {first_name} {last_name}.")
