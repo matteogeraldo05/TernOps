@@ -497,7 +497,7 @@ def createCelebrityFrame(celebrity=None):
 
     # List of attributes to display (label text, corresponding dictionary key, initial rely position)
     info = [
-        ("Biography", 'biography', 0.15),
+        ("Biography", 'biography', 0.150),
         ("Achievements", 'achievements', 0.35),
         ("Net Worth", 'net_worth', 0.45),
         ("Industry", 'industry', 0.55),
@@ -569,6 +569,7 @@ def createFilterFrame():
     def checkbox_event(var, label):
         print(f"Checkbox for {label} toggled, current value:", var.get())
     
+    #TODO make a CTkEntry for each checkbox!
     global filterFrame
     filterFrame = CTkFrame(app, width=1280, height=720)
     filterFrame.pack(fill="both", expand=True)

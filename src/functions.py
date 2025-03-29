@@ -74,7 +74,7 @@ def delete_data(file_path, first_name, last_name):
     images_path = df.loc[mask, 'images_path'].values[0]
     # Get the folder path
     folder_path = os.path.dirname(images_path)
-
+    print(folder_path)
     # If the entry does exist, remove the row from the DataFrame
     df = df[~mask]
 
