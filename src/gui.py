@@ -1,6 +1,6 @@
 from customtkinter import *
 from CTkMessagebox import CTkMessagebox
-from PIL import Image
+from PIL import Image, ImageOps
 import accounts
 import functions
 import pytest
@@ -89,7 +89,7 @@ def createCelebrityRow(celebrities, scrollFrame):
         dateOfDeath = celebrity["date_of_death"]
         industry = celebrity["industry"]
         biography = str(celebrity["biography"])
-        #image = celebrity["images_path"]
+        image = celebrity["images_path"]
 
         # Create a a breif bio
         brief_bio = biography[:300] + "..."
@@ -98,10 +98,17 @@ def createCelebrityRow(celebrities, scrollFrame):
         rowFrame = CTkFrame(scrollFrame, width=1280, height=150, fg_color=colorPalette["darkGray"])
         rowFrame.pack(fill="x", pady=5)
 
-        # TODO Image
-        celebrityImage = CTkImage(dark_image=Image.open("src\\Data\\Images\\user\\user_100.png"), size=(150, 150))
-        celebrityLabel = CTkLabel(rowFrame, image=celebrityImage, text="")
-        celebrityLabel.pack(side="left", padx=10, pady=10)
+        try:
+            celebrityImage = Image.open(image)
+            celebrityImage = ImageOps.fit(celebrityImage, (150, 150), method=0, bleed=0.0, centering=(0.5, 0.5))
+            celebrityImage = CTkImage(dark_image=celebrityImage, size=(150, 150))
+            celebrityLabel = CTkLabel(rowFrame, image=celebrityImage, text="")
+            celebrityLabel.pack(side="left", padx=10, pady=10)
+        except Exception as e:
+            celebrityImage = CTkImage(dark_image=Image.open("src/Data/Images/user/user_100.png"), size=(150, 150))
+            celebrityLabel = CTkLabel(rowFrame, image=celebrityImage, text="")
+            celebrityLabel.pack(side="left", padx=10, pady=10)
+
 
         # Name, DOB, Industry Labels
         labelFrame = CTkFrame(rowFrame, fg_color=colorPalette["darkGray"])
@@ -203,11 +210,18 @@ def createMainFrame(filteredCelebrities=None):
 
     #TODO Filter
     # Filter icon glass icon
-    FilterIcon = CTkImage(dark_image=Image.open("src\\Data\\Images\\system\\filter.png"), size=(30, 30))
+    filterIcon = CTkImage(dark_image=Image.open("src\\Data\\Images\\system\\filter.png"), size=(30, 30))
     # Create a label with the magnify icon and place it inside the search bar
-    FilterLabel = CTkLabel(topFrame, image=FilterIcon, text="", cursor="hand2")
-    FilterLabel.place(relx=0.8, rely=0.5, anchor="center") 
-    FilterLabel.bind("<Button-1>", lambda event: showFilterFrame()) 
+    filterLabel = CTkLabel(topFrame, image=filterIcon, text="", cursor="hand2")
+    filterLabel.place(relx=0.8, rely=0.5, anchor="center") 
+    filterLabel.bind("<Button-1>", lambda event: showFilterFrame()) 
+    #TODO Favourites
+    # Favourites icon glass icon
+    FavouritesIcon = CTkImage(dark_image=Image.open("src\\Data\\Images\\system\\favourites.png"), size=(30, 30))
+    # Create a label with the magnify icon and place it inside the search bar
+    FavouritesLabel = CTkLabel(topFrame, image=FavouritesIcon, text="", cursor="hand2")
+    FavouritesLabel.place(relx=0.845, rely=0.5, anchor="center") 
+    FavouritesLabel.bind("<Button-1>", lambda event: print("Favourites clicked")) 
     
     # Add Celebrity
     addButton = CTkButton(topFrame, text="+", font=("Arial",24), command=lambda: createEditCelebrityFrame("Add"), width=36, height=36, fg_color=colorPalette["darkGray"], hover_color=colorPalette["lightGray"])

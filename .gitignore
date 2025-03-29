@@ -1,5 +1,6 @@
 # Python Bytecode
 __pycache__/
+*.pyc
 
 # Virtual environments
 venv/
@@ -9,10 +10,13 @@ venv/
 .vscode/
 .idea/
 
+#dont add build files to git
+build/
+dist/
 # Do not upload user data
 *.csv
 # Dont upload so many images
 #Images/
 #*.png
 #*.jpg
-#*.jpeg    
+#*.jpeg

@@ -1,0 +1,5 @@
+customtkinter
+CTkMessagebox
+numpy
+pandas
+pytest
