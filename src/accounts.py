@@ -3,10 +3,11 @@ import csv
 
 # Account class
 class Account:
-    def __init__(self, name: str, pw: str, admin: bool):
+    def __init__(self, name: str, pw: str, admin: bool, fav: list):
         self.user_name = name
         self.password = pw
         self.is_admin = admin
+        self.favourites = fav
     
     def set_user_name(self, name):
         self.user_name = name
@@ -26,6 +27,43 @@ class Account:
     def get_is_admin(self):
         return self.is_admin
     
+    def get_favourites(self):
+        return self.favourites
+    
+    def add_favourite(self, file_path, celebrity_name):
+        # check if the celebrity has already been favourited
+        if celebrity_name in self.favourites:
+            print(f"Celebrity already found in {self.user_name}'s favourites!")
+            return
+        
+        # add the celebrity's name to the list of their favourites
+        self.favourites.append(celebrity_name)
+
+        # update the csv file with the new list
+        accounts_df = pd.read_csv(file_path) 
+        mask = accounts_df["user_name"] == self.user_name
+        accounts_df.loc[mask, "favourites"] = ",".join(self.favourites)
+        accounts_df.to_csv(file_path, index=False)
+
+        print(f"{celebrity_name} added to {self.user_name}'s favourites!")
+
+    def remove_favourite(self, file_path, celebrity_name):
+        # check if the celebrity is in the users favourites
+        if celebrity_name not in self.favourites:
+            print(f"Celebrity not found in {self.user_name}'s favourites!")
+            return
+        
+        # remove the celebrity's name from the users list of favourites
+        self.favourites.remove(celebrity_name)
+
+        # update the csv file with the new list
+        accounts_df = pd.read_csv(file_path) 
+        mask = accounts_df["user_name"] == self.user_name
+        accounts_df.loc[mask, "favourites"] = ",".join(self.favourites)
+        accounts_df.to_csv(file_path, index=False)
+
+        print(f"{celebrity_name} removed from {self.user_name}'s favourites!")
+
     def account_info_to_string(self):
         return f"Username: {self.user_name}\tPassword: {self.password}\tAdmin: {self.is_admin}"
 
@@ -57,7 +95,7 @@ def register_user(user_name, password, is_admin, file_path):
             account_file.close()
 
             #print(f"Account successfully created! You are now logged in.\nWelcome {user_name}!")
-            current_account = Account(user_name,password,is_admin) # Create a new Account object with the users data
+            current_account = Account(user_name,password,is_admin,[]) # Create a new Account object with the users data
             return True, current_account, "Registered"
     else:
         #print(f"Sorry, the username {user_name} is already taken, Please try again.")
@@ -81,8 +119,15 @@ def login(user_name, password, file_path):
         
         # Verify the user's password
         if str(user_data.iloc[1]) == password:
+            # extract the users favourites from user_data as a list
+            favourites_list = user_data["favourites"]
+            if pd.isna(favourites_list):  
+                favourites_list = []  
+            else:
+                favourites_list = favourites_list.split(",")
+
             #print(f"Login successful!\nWelcome {user_name}!")
-            current_account = Account(user_data["user_name"],user_data["password"],user_data["is_admin"]) # Create a new Account object with the users data
+            current_account = Account(user_data["user_name"], user_data["password"], user_data["is_admin"], favourites_list) # Create a new Account object with the users data
             return True, current_account, "Logged In."
         else:
             #print("Incorrect password.")

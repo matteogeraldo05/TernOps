@@ -1,3 +1,2 @@
-user_name,password,is_admin
-matteo,123,false
-ryan,123,false
+user_name,password,is_admin,favourites
+ryan,123,True,"Leonardo,Bill,Johnny,Mark,Albert,Steve,Usain,Will,Barack"

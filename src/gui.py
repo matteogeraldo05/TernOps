@@ -126,18 +126,30 @@ def createCelebrityRow(celebrities, scrollFrame):
         # Buttons grouped
         buttonFrame = CTkFrame(rowFrame, fg_color=colorPalette["darkGray"])
         buttonFrame.pack(side="right", padx=10, pady=10)
-        # Favorite button
-        favoriteButton = CTkButton(buttonFrame, text="Favorite", command=None, width=60)
-        favoriteButton.grid(row=0, column=0, pady=5)
+
+        if not isinstance(userAccount, accounts.Guest) and firstName not in userAccount.get_favourites():
+            # Favorite button
+            favoriteButton = CTkButton(buttonFrame, text="Favorite", width=60)
+            favoriteButton.configure(command=lambda name=firstName, button_instance=favoriteButton, button_frame_instance=buttonFrame: addFavouriteButtonFunc(button_frame_instance, button_instance, "src\\Data\\accountInfo.csv", name))
+            favoriteButton.grid(row=0, column=0, pady=5)
+        
+        elif not isinstance(userAccount, accounts.Guest) and firstName in userAccount.get_favourites():
+            # REMOVE from Favourites button
+            removeFavouriteButton = CTkButton(buttonFrame, text="Un-favourite", width=60)
+            removeFavouriteButton.configure(command=lambda name=firstName, button_instance=removeFavouriteButton, button_frame_instance=buttonFrame: removeFavouriteButtonFunc(button_frame_instance, button_instance, "src\\Data\\accountInfo.csv", name))
+            removeFavouriteButton.grid(row=0, column=0, pady=5)
+
         # Learn more button
         LearnMoreButton = CTkButton(buttonFrame, text="Learn More", command=lambda celeb=celebrity: showCelebrityFrame(celeb), width=60)
         LearnMoreButton.grid(row=1, column=0, pady=5)
-        # Edit button
-        editButton = CTkButton(buttonFrame, text="Edit", command=lambda celeb=celebrity: createEditCelebrityFrame("Edit", celeb["first_name"], celeb["last_name"]), width=60)
-        editButton.grid(row=2, column=0, pady=5)
-        # Remove button
-        removeButton = CTkButton(buttonFrame, text="DELETE", command=lambda firstName=celebrity["first_name"], lastName=celebrity["last_name"]: removeCelebrity(firstName, lastName), width=60)
-        removeButton.grid(row=3, column=0, pady=5)
+
+        if userAccount.get_is_admin():
+            # Edit button
+            editButton = CTkButton(buttonFrame, text="Edit", command=lambda celeb=celebrity: createEditCelebrityFrame("Edit", celeb["first_name"], celeb["last_name"]), width=60)
+            editButton.grid(row=2, column=0, pady=5)
+            # Remove button
+            removeButton = CTkButton(buttonFrame, text="DELETE", command=lambda firstName=celebrity["first_name"], lastName=celebrity["last_name"]: removeCelebrity(firstName, lastName), width=60)
+            removeButton.grid(row=3, column=0, pady=5)
 
         # Bio
         bioLabel = CTkLabel(rowFrame, text=brief_bio, font=("Arial", 16), wraplength=650, justify="left")
@@ -219,13 +231,15 @@ def createMainFrame(filteredCelebrities=None):
     # Favourites icon glass icon
     FavouritesIcon = CTkImage(dark_image=Image.open("src\\Data\\Images\\system\\favourites.png"), size=(30, 30))
     # Create a label with the magnify icon and place it inside the search bar
-    FavouritesLabel = CTkLabel(topFrame, image=FavouritesIcon, text="", cursor="hand2")
-    FavouritesLabel.place(relx=0.845, rely=0.5, anchor="center") 
-    FavouritesLabel.bind("<Button-1>", lambda event: print("Favourites clicked")) 
+    if not isinstance(userAccount,accounts.Guest):
+        FavouritesLabel = CTkLabel(topFrame, image=FavouritesIcon, text="", cursor="hand2")
+        FavouritesLabel.place(relx=0.845, rely=0.5, anchor="center") 
+        FavouritesLabel.bind("<Button-1>", lambda event: print(f"Favourites clicked - {userAccount.get_favourites()}")) 
     
     # Add Celebrity
-    addButton = CTkButton(topFrame, text="+", font=("Arial",24), command=lambda: createEditCelebrityFrame("Add"), width=36, height=36, fg_color=colorPalette["darkGray"], hover_color=colorPalette["lightGray"])
-    addButton.place(relx=0.75, rely=0.5, anchor="center")
+    if userAccount.get_is_admin():
+        addButton = CTkButton(topFrame, text="+", font=("Arial",24), command=lambda: createEditCelebrityFrame("Add"), width=36, height=36, fg_color=colorPalette["darkGray"], hover_color=colorPalette["lightGray"])
+        addButton.place(relx=0.75, rely=0.5, anchor="center")
 
     # Scrollable frame to house list of celebrities
     scrollFrame = CTkScrollableFrame(mainFrame, width=1280, height=660)
@@ -241,6 +255,24 @@ def createMainFrame(filteredCelebrities=None):
     # Create a row for each celebrity in the CSV file
     createCelebrityRow(celebrities, scrollFrame)
 
+# removes favourite celebrity and then destroys the instance of the button as well as creating a new instance of the opposite button
+def removeFavouriteButtonFunc(buttonFrame, buttonInstance, file_path, celeb_name):
+    userAccount.remove_favourite(file_path, celeb_name)
+    buttonInstance.destroy()
+    # create a new instance of REMOVE from Favourites button
+    addFavouriteButton = CTkButton(buttonFrame, text="Favourite", width=60)
+    addFavouriteButton.configure(command=lambda name=celeb_name, button_instance=addFavouriteButton: addFavouriteButtonFunc(buttonFrame, button_instance, "src\\Data\\accountInfo.csv", name))
+    addFavouriteButton.grid(row=0, column=0, pady=5)
+
+# adds favourite celebrity and then destroys the instance of the button as well as creating a new instance of the opposite button
+def addFavouriteButtonFunc(buttonFrame, buttonInstance, file_path, celeb_name):
+    userAccount.add_favourite(file_path, celeb_name)
+    buttonInstance.destroy()
+    # create a new instance of REMOVE from Favourites button
+    removeFavouriteButton = CTkButton(buttonFrame, text="Un-favourite", width=60)
+    removeFavouriteButton.configure(command=lambda name=celeb_name, button_instance=removeFavouriteButton: removeFavouriteButtonFunc(buttonFrame, button_instance, "src\\Data\\accountInfo.csv", name))
+    removeFavouriteButton.grid(row=0, column=0, pady=5)
+    
 # Create the sign in frame
 def createSignInFrame(signInType):
     def printToLabel():
