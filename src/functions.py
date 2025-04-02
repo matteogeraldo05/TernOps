@@ -72,9 +72,13 @@ def delete_data(file_path, first_name, last_name):
 
     # Get where the images are
     images_path = df.loc[mask, 'images_path'].values[0]
-    # Get the folder path
-    folder_path = os.path.dirname(images_path)
-    print(folder_path)
+
+    # Handle if there is or isnt a path
+    if pd.isna(images_path) or not isinstance(images_path, str) or images_path.strip() == "":
+        print(f"Warning: No valid image path found for {first_name} {last_name}. Skipping image deletion.")
+        folder_path = None
+    else:
+        folder_path = os.path.dirname(images_path)
     # If the entry does exist, remove the row from the DataFrame
     df = df[~mask]
 
@@ -82,14 +86,15 @@ def delete_data(file_path, first_name, last_name):
     df.to_csv(file_path, index=False)
 
     # Delete image and image folder
-    if os.path.exists(folder_path):
+    if folder_path and os.path.exists(folder_path):
         try:
             shutil.rmtree(folder_path)  # Delete the folder and its contents
             print(f"Successfully deleted the folder: {folder_path}")
         except Exception as e:
             print(f"Error deleting folder: {e}")
     else:
-        print(f"Folder at {folder_path} does not exist.")
+        print(f"Skipping image deletion. Folder '{folder_path}' does not exist or was invalid.")
+
         
     # Print a success message
     print(f"Successfully deleted the entry for {first_name} {last_name}.")
