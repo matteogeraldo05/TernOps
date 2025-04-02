@@ -118,9 +118,20 @@ def load_celebrities_file(csv_file):
 
 #^ Filter Function
 def filter_by_tag(csv_file, column, search_string):
-    df = pd.read_csv(csv_file) # create dataframe
-    filtered_df = df[df[column].astype(str).str.contains(search_string, na=False, case=False)] # create the filtered dataframe
-    return filtered_df # return the filtered dataframe
+    # create dataframe
+    df = pd.read_csv(csv_file)
+
+    # Check if the column name is empty
+    if not column:
+        raise ValueError("Column name cannot be empty")
+
+    # Ensure the column exists in the DataFrame
+    if column not in df.columns:
+        raise KeyError(f"Column '{column}' not found in the DataFrame")
+
+    # create and return the filtered dataframe
+    filtered_df = df[df[column].astype(str).str.contains(search_string, na=False, case=False)]
+    return filtered_df
 
 # def filter_data(tag):
 #     return #data which matches the tag

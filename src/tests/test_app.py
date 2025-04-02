@@ -3,6 +3,8 @@ import pandas as pd
 import os
 import shutil
 import tempfile
+import sys
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'src')))
 import accounts
 import functions
 import csv
@@ -17,8 +19,8 @@ class AccountsTest(unittest.TestCase):
         # Create a test accounts file
         with open(self.account_file, "w", newline="") as f:
             writer = csv.writer(f)
-            writer.writerow(["user_name", "password", "is_admin"])
-            writer.writerow(["testuser", "testpass", True])
+            writer.writerow(["user_name", "password", "is_admin","favourites"])
+            writer.writerow(["testuser", "testpass", True, ""])
     
     def tearDown(self):
         # Remove temporary files after tests
@@ -100,6 +102,8 @@ class FunctionsTest(unittest.TestCase):
             writer = csv.writer(f)
             writer.writerow(["first_name", "last_name", "date_of_birth", "images_path"])
             writer.writerow(["John", "Doe", "January 1, 1980", os.path.join(self.image_dir, "john_doe.jpg")])
+            writer.writerow(["Jackie", "Chan", "February 15, 1985", os.path.join(self.image_dir, "jackie_chan.jpg")])
+            writer.writerow(["Jack", "Sparrow", "March 22, 1980", os.path.join(self.image_dir, "jack_sparrow.jpg")])
     
     def tearDown(self):
         # Clean up temp files
@@ -118,7 +122,7 @@ class FunctionsTest(unittest.TestCase):
         
         # Verify data was added
         df = pd.read_csv(self.test_csv)
-        self.assertEqual(len(df), 2)  # Original + new entry
+        self.assertEqual(len(df), 4)  # Original + new entry
         self.assertIn("Jane", df["first_name"].values)
         self.assertIn("Smith", df["last_name"].values)
     
@@ -166,7 +170,7 @@ class FunctionsTest(unittest.TestCase):
         
         # Verify data was deleted
         df = pd.read_csv(self.test_csv)
-        self.assertEqual(len(df), 0)
+        self.assertEqual(len(df), 2)
         
         # Verify image was deleted
         self.assertFalse(os.path.exists(john_image))
@@ -186,9 +190,51 @@ class FunctionsTest(unittest.TestCase):
         # UT-12-CB: Testing loading celebrities from CSV
         celebrities = functions.load_celebrities_file(self.test_csv)
         
-        self.assertEqual(len(celebrities), 1)
+        self.assertEqual(len(celebrities), 3)
         self.assertEqual(celebrities[0]["first_name"], "John")
         self.assertEqual(celebrities[0]["last_name"], "Doe")
+
+    # Tests on search function
+    def test_filter_by_tag(self):
+        # UT-13-OB: Testing Filtering by First Name
+        result_df = functions.filter_by_tag(self.test_csv, "first_name", "John")
+
+        self.assertEqual(len(result_df), 1)
+        self.assertEqual(result_df["first_name"].iloc[0], "John")
+
+    def test_filter_by_tag_no_match(self):
+        # UT-14-OB: Testing Filter for a non-existent name
+        result_df = functions.filter_by_tag(self.test_csv, "first_name", "Nonexistent")
+
+        self.assertEqual(len(result_df), 0)
+
+    def test_filter_by_tag_multiple_matches(self):
+        # UT-15-OB: Filtering by date of birth in search (Removed but still present)
+        result_df = functions.filter_by_tag(self.test_csv, "date_of_birth", "1980")
+
+        self.assertEqual(len(result_df), 2)
+        self.assertIn("John", result_df["first_name"].values)
+        self.assertIn("Jack", result_df["first_name"].values)
+
+    def test_filter_by_tag_case_insensitive(self):
+        # UT-16-OB: Testing for case sensitivity
+        result_df = functions.filter_by_tag(self.test_csv, "first_name", "john")
+        self.assertEqual(len(result_df), 1)
+        self.assertEqual(result_df["first_name"].iloc[0], "John")
+
+    def test_filter_by_tag_empty_string(self):
+        # UT-17-OB:  Testing empty bar, should return all
+        result_df = functions.filter_by_tag(self.test_csv, "first_name", "")
+
+        self.assertEqual(len(result_df), 3)  
+
+    def test_filter_by_tag_empty_column(self):
+        # UT-18-OB: Testing search on empty column 
+        with self.assertRaises(ValueError) as context:
+            functions.filter_by_tag(self.test_csv, "", "John")
+
+        # Check if the error message matches the expected message
+        self.assertEqual(str(context.exception), "Column name cannot be empty")
 
 
 if __name__ == "__main__":

@@ -7,7 +7,7 @@ class Account:
         self.user_name = name
         self.password = pw
         self.is_admin = admin
-        self.favourites = fav
+        self.favourites = fav or []
     
     def set_user_name(self, name):
         self.user_name = name
@@ -64,8 +64,10 @@ class Account:
 
         print(f"{celebrity_name} removed from {self.user_name}'s favourites!")
 
-    def account_info_to_string(self):
-        return f"Username: {self.user_name}\tPassword: {self.password}\tAdmin: {self.is_admin}"
+    def account_info_to_string(self):\
+        # Join the favourite list into string like "Mark Hamill, John Doe"
+        fav_str = ", ".join(self.favourites) if self.favourites else "none"
+        return f"Username: {self.user_name}\tPassword: {self.password}\tAdmin: {self.is_admin}\tFavs: {fav_str}"
 
 
 # Guest account class
