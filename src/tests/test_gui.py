@@ -1,17 +1,18 @@
 import pytest
 from unittest.mock import MagicMock, patch, call, ANY
+
 import sys
 import os
-
-
 # Add project root to Python path
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
 from gui import *
 import accounts
 
 @pytest.fixture
 def mock_gui(monkeypatch):
-    """Fixture to mock GUI components and user account"""
+    
+    # Mock Gui components
     with patch('customtkinter.CTk') as mock_ctk, \
          patch('CTkMessagebox.CTkMessagebox'), \
          patch('PIL.Image.open'), \
@@ -42,7 +43,7 @@ def mock_gui(monkeypatch):
         }
 
 def test_create_celebrity_row(mock_gui):
-    """Test celebrity row creation with proper button assertions"""
+    # UT-23-OB: Test celebrity row creation and proper buttons
     mock_scroll = MagicMock()
     mock_scroll.winfo_children.return_value = []
     
@@ -60,14 +61,14 @@ def test_create_celebrity_row(mock_gui):
     
     # Verify button creation with command parameter
     mock_gui['ctk_button'].assert_any_call(
-        ANY,  # Parent widget
+        ANY,  
         text="Learn More",
         width=60,
-        command=ANY  # Accept any command handler
+        command=ANY  
     )
 
 def test_favorite_buttons(mock_gui):
-    """Test favorite button functionality with proper account mocking"""
+    # UT-24-OB: Test favourite button with Account mocking
     mock_user = mock_gui['user_account']
     
     # Test add favorite
