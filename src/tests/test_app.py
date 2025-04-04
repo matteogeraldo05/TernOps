@@ -1,4 +1,5 @@
 import unittest
+from unittest.mock import MagicMock, patch
 import pandas as pd
 import os
 import shutil
@@ -8,6 +9,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..',
 import accounts
 import functions
 import csv
+from gui import removeCelebrity
 
 class AccountsTest(unittest.TestCase):
     
@@ -236,6 +238,47 @@ class FunctionsTest(unittest.TestCase):
         # Check if the error message matches the expected message
         self.assertEqual(str(context.exception), "Column name cannot be empty")
 
+class TestRemoveCelebrity(unittest.TestCase):
+    
+    @patch('gui.CTkMessagebox')  
+    @patch('gui.functions.delete_data')
+    @patch('gui.showMainFrame')
+    def test_removeCelebrity_yes(self, mock_showMainFrame, mock_delete_data, MockCTkMessagebox):
+        # UT-19-OB: Testing removing function when user selects yes
+        mock_messagebox = MockCTkMessagebox.return_value
+        mock_messagebox.get.return_value = "Yes" 
 
+        # Fake Celeb
+        first_name = "John"
+        last_name = "Doe"
+        removeCelebrity(first_name, last_name)
+
+        # Assert
+        MockCTkMessagebox.assert_called_once_with(
+            message=f"Are you sure you would like to delete {first_name} {last_name}? This action is permenant.",
+            icon="warning",
+            option_1="Yes",
+            option_2="No"
+        )
+        mock_delete_data.assert_called_once_with("src\\Data\\celebrities.csv", first_name, last_name)
+        mock_showMainFrame.assert_called_once()
+
+    @patch('gui.CTkMessagebox')  
+    @patch('gui.functions.delete_data')
+    @patch('gui.showMainFrame')
+    def test_removeCelebrity_no(self, mock_showMainFrame, mock_delete_data, MockCTkMessagebox):
+        # UT-20-OB: Testing removing function when user selects no
+        mock_messagebox = MockCTkMessagebox.return_value
+        mock_messagebox.get.return_value = "No"  
+
+        # Fake Celeb
+        first_name = "John"
+        last_name = "Doe"
+        removeCelebrity(first_name, last_name)
+
+        # Assert
+        mock_delete_data.assert_not_called()  
+        mock_showMainFrame.assert_not_called()  
+    
 if __name__ == "__main__":
     unittest.main()
