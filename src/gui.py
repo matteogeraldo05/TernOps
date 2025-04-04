@@ -364,19 +364,20 @@ def createSignInFrame(signInType):
 # Create the edit celebrity frame
 def createEditCelebrityFrame(editType, originalFirstName=None, originalLastName=None):
     global localImagePath
+    localImagePath = None
+
     def getImagePath():
         global localImagePath
-        filePath = filedialog.askopenfilename(title="Select an Image", filetypes=[("Image Files", "*.jpg;*.jpeg;*.png;")])
+        filePath = filedialog.askopenfilename(title="Select an Image",filetypes=[("Image Files", "*.jpg;*.jpeg;*.png;")])
+        # Only store the path, don't copy yet
+        localImagePath = filePath  
         filePathLabel = CTkLabel(editCelebrityFrame, text=f"Image: {filePath[:35]}", font=("Helvetica", 14))
-        filePathLabel.place(x=240, y=390)
-        celebrityName = firstNameField.get() + "_" + lastNameField.get()
-        localImagePath = functions.copy_image_to_folder(filePath, celebrityName)
-    
+        filePathLabel.place(x=260, y=390)  
+
     def editCelebrity():
         firstName = firstNameField.get()
         lastName = lastNameField.get()
         dateOfBirth = dateOfBirthField.get()
-        imagePath = localImagePath
         dateOfDeath = dateOfDeathField.get()
         industry = industryField.get()
         associations = associationsField.get() 
@@ -391,7 +392,13 @@ def createEditCelebrityFrame(editType, originalFirstName=None, originalLastName=
         influence = influenceField.get() 
         political = politicalField.get() 
         achievements = achievementsTextbox.get("1.0", "end-1c") 
-       
+        
+        imagePath = None
+        # now we copy
+        if localImagePath: 
+            celebrityName = f"{firstName}_{lastName}"
+            imagePath = functions.copy_image_to_folder(localImagePath, celebrityName)
+
         #Initialize errorMessage
         errorMessage = None
         
@@ -479,7 +486,9 @@ def createEditCelebrityFrame(editType, originalFirstName=None, originalLastName=
                 functions.edit_data("src/Data/celebrities.csv", "first_name", originalFirstName, "gender", gender)
             if netWorth:  # Update net worth
                 functions.edit_data("src/Data/celebrities.csv", "first_name", originalFirstName, "net_worth", netWorth)
-
+            if imagePath:
+                functions.edit_data("src/Data/celebrities.csv", "first_name", originalFirstName, "images_path", imagePath)
+            
             successLabel = CTkLabel(editCelebrityFrame, text=f"Successfully edited {firstName} {lastName}!", font=("Helvetica", 16), text_color="green")
             successLabel.place(relx=0.5, rely=0.75, anchor="center")
             app.after(2000, showMainFrame)
