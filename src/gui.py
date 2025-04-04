@@ -10,6 +10,7 @@ app.title("TERNOPS - Celebrity Bio Application")
 app.iconbitmap("src\\Data\\Images\\system\\ternops.ico")
 app.geometry("1280x720")
 app.resizable(False, False)
+app._set_appearance_mode("dark")
 colorPalette = {"black": "#000000",
                 "veryDarkGray": "#121212",
                 "darkGray": "#212121",
@@ -77,6 +78,7 @@ def removeCelebrity(firstName, lastName):
             pass
 
 def createCelebrityRow(celebrities, scrollFrame):
+    global userAccount
     # Clear the previous celebrity list
     for widget in scrollFrame.winfo_children():
         widget.destroy()
@@ -92,7 +94,7 @@ def createCelebrityRow(celebrities, scrollFrame):
         image = celebrity["images_path"]
 
         # Create a a breif bio
-        brief_bio = biography[:300] + "..."
+        brief_bio = biography[:400] + "..."
 
         # Create the row using the celebrity data
         rowFrame = CTkFrame(scrollFrame, width=1280, height=150, fg_color=colorPalette["darkGray"])
@@ -125,42 +127,44 @@ def createCelebrityRow(celebrities, scrollFrame):
 
         # Buttons grouped
         buttonFrame = CTkFrame(rowFrame, fg_color=colorPalette["darkGray"])
-        buttonFrame.pack(side="right", padx=10, pady=10)
+        buttonFrame.pack(side="right", padx=5, pady=10)
 
-        if not isinstance(userAccount, accounts.Guest) and firstName not in userAccount.get_favourites():
-            # Favorite button
-            favoriteButton = CTkButton(buttonFrame, text="Favorite", width=60)
-            favoriteButton.configure(command=lambda name=firstName, button_instance=favoriteButton, button_frame_instance=buttonFrame: addFavouriteButtonFunc(button_frame_instance, button_instance, "src\\Data\\accountInfo.csv", name))
-            favoriteButton.grid(row=0, column=0, pady=5)
-        
-        elif not isinstance(userAccount, accounts.Guest) and firstName in userAccount.get_favourites():
-            # REMOVE from Favourites button
-            removeFavouriteButton = CTkButton(buttonFrame, text="Un-favourite", width=60)
-            removeFavouriteButton.configure(command=lambda name=firstName, button_instance=removeFavouriteButton, button_frame_instance=buttonFrame: removeFavouriteButtonFunc(button_frame_instance, button_instance, "src\\Data\\accountInfo.csv", name))
-            removeFavouriteButton.grid(row=0, column=0, pady=5)
+        fullName = f"{firstName} {lastName}"
+        if not isinstance(userAccount, accounts.Guest):
+            if fullName not in userAccount.get_favourites():  # Check if the full name is in the favourites list
+                # Favorite button
+                favoriteButton = CTkButton(buttonFrame, text="FAVOURITE", font=('Helvetica', 14), width=80, height=26, fg_color=colorPalette["veryDarkGray"], hover_color=colorPalette["mediumGray"])
+                favoriteButton.configure(command=lambda name=fullName, button_instance=favoriteButton, button_frame_instance=buttonFrame: addFavouriteButtonFunc(button_frame_instance, button_instance, "src\\Data\\accountInfo.csv", name))
+                favoriteButton.grid(row=0, column=0, pady=5)
+            
+            else:  # If the full name is in the favourites list
+                # REMOVE from Favourites button
+                removeFavouriteButton = CTkButton(buttonFrame, text="UN-FAVOURITE", font=('Helvetica', 14), width=80, height=26, fg_color=colorPalette["veryDarkGray"], hover_color=colorPalette["mediumGray"])
+                removeFavouriteButton.configure(command=lambda name=fullName, button_instance=removeFavouriteButton, button_frame_instance=buttonFrame: removeFavouriteButtonFunc(button_frame_instance, button_instance, "src\\Data\\accountInfo.csv", name))
+                removeFavouriteButton.grid(row=0, column=0, pady=5)
 
         # Learn more button
-        LearnMoreButton = CTkButton(buttonFrame, text="Learn More", command=lambda celeb=celebrity: showCelebrityFrame(celeb), width=60)
+        LearnMoreButton = CTkButton(buttonFrame, text="LEARN MORE", font=('Helvetica', 14), command=lambda celeb=celebrity: showCelebrityFrame(celeb), width=80, height=26, fg_color=colorPalette["veryDarkGray"], hover_color=colorPalette["mediumGray"])
         LearnMoreButton.grid(row=1, column=0, pady=5)
 
         if userAccount.get_is_admin():
             # Edit button
-            editButton = CTkButton(buttonFrame, text="Edit", command=lambda celeb=celebrity: createEditCelebrityFrame("Edit", celeb["first_name"], celeb["last_name"]), width=60)
+            editButton = CTkButton(buttonFrame, text="EDIT", font=('Helvetica', 14), command=lambda celeb=celebrity: createEditCelebrityFrame("Edit", celeb["first_name"], celeb["last_name"]), width=80, height=26, fg_color=colorPalette["veryDarkGray"], hover_color=colorPalette["mediumGray"])
             editButton.grid(row=2, column=0, pady=5)
             # Remove button
-            removeButton = CTkButton(buttonFrame, text="DELETE", command=lambda firstName=celebrity["first_name"], lastName=celebrity["last_name"]: removeCelebrity(firstName, lastName), width=60)
+            removeButton = CTkButton(buttonFrame, text="DELETE", font=("Helvetica", 14), command=lambda firstName=celebrity["first_name"], lastName=celebrity["last_name"]: removeCelebrity(firstName, lastName), width=80, height=26, fg_color=colorPalette["veryDarkGray"], hover_color=colorPalette["mediumGray"])
             removeButton.grid(row=3, column=0, pady=5)
 
         # Bio
-        bioLabel = CTkLabel(rowFrame, text=brief_bio, font=("Arial", 16), wraplength=650, justify="left")
+        bioLabel = CTkLabel(rowFrame, text=brief_bio, font=("Helvetica", 16), wraplength=650, justify="left")
         bioLabel.pack(side="right", padx=30, pady=10)
 #------------------------------------------FUNCTIONS TO BE MOVED------------------------------------------------
 
-# Create the favorites frame
+# Create the main frame
 def createMainFrame(filteredCelebrities=None):
     def logoutAndShowMain():
         global userAccount
-        userAccount = accounts.Guest() #todo
+        userAccount = accounts.Guest()
         showMainFrame()
     
     def searchCelebrities(userInput, celebrities, scrollFrame):
@@ -178,6 +182,21 @@ def createMainFrame(filteredCelebrities=None):
         else:
             createCelebrityRow(celebrities, scrollFrame)
 
+    def showFavourites(favourites, celebrities, scrollFrame):
+        # Clear any existing content in the scrollFrame
+        for widget in scrollFrame.winfo_children():
+            widget.destroy()
+
+        # Filter celebrities by favourites (match full name)
+        favouriteCelebrities = []
+        for celeb in celebrities:
+            full_name = f"{celeb['first_name']} {celeb['last_name']}"
+            if full_name in favourites:
+                favouriteCelebrities.append(celeb)
+        
+        # Create a row for each favourite celebrity
+        createCelebrityRow(favouriteCelebrities, scrollFrame)
+
     global mainFrame, userAccount, scrollFrame
 
     # Frame to house all elements
@@ -187,12 +206,14 @@ def createMainFrame(filteredCelebrities=None):
     topFrame = CTkFrame(mainFrame, width=1280, height=70, fg_color=colorPalette["veryDarkGray"], corner_radius=0)
     topFrame.pack(fill="x", side="top")
 
-    #TODO Profile Picture 
-    profilePicture = CTkImage(dark_image=Image.open("src\\Data\\Images\\user\\user.png"), size=(30,30))
+    if not isinstance(userAccount,accounts.Guest):
+        profilePicture = CTkImage(dark_image=Image.open("src\\Data\\Images\\user\\admin_100.png"), size=(30,30))
+    else:
+        profilePicture = CTkImage(dark_image=Image.open("src\\Data\\Images\\user\\user.png"), size=(30,30))
     profilePictureLabel = CTkLabel(topFrame, image=profilePicture, text="")
     profilePictureLabel.place(x=20, y=20)
     #User info
-    userLabel = CTkLabel(topFrame, text=userAccount.get_user_name(), font=("Arial", 28))
+    userLabel = CTkLabel(topFrame, text=userAccount.get_user_name(), font=("Helvetica", 28))
     userLabel.place(x=70, y=20)
     # If the username is too long replce with ...
     if len(userLabel.cget("text")) > 20:
@@ -200,17 +221,17 @@ def createMainFrame(filteredCelebrities=None):
 
     if userAccount.get_user_name() == "Guest":
         # Login / Register buttons
-        loginButton = CTkButton(topFrame, text="Login", font=("Arial", 14), command=lambda: showSignInFrame("Login to Account"), width=60, height=36, fg_color=colorPalette["mediumGray"], hover_color=colorPalette["lightGray"])
+        loginButton = CTkButton(topFrame, text="Login", font=("Helvetica", 14), command=lambda: showSignInFrame("Login to Account"), width=60, height=36, fg_color=colorPalette["mediumGray"], hover_color=colorPalette["lightGray"])
         loginButton.place(x=1280 - 60 - 20, y=16)  
-        registerButton = CTkButton(topFrame, text="Register", font=("Arial", 14), command=lambda: showSignInFrame("Register Account"), width=60, height=36, fg_color=colorPalette["mediumGray"], hover_color=colorPalette["lightGray"])
+        registerButton = CTkButton(topFrame, text="Register", font=("Helvetica", 14), command=lambda: showSignInFrame("Register Account"), width=60, height=36, fg_color=colorPalette["mediumGray"], hover_color=colorPalette["lightGray"])
         registerButton.place(x=1280 - 60 - 20 - 60 - 20, y=16)
     else:
         # Logout button
-        logoutButton = CTkButton(topFrame, text="Logout", font=("Arial", 14), command=logoutAndShowMain, width=60, height=36, fg_color=colorPalette["mediumGray"], hover_color=colorPalette["lightGray"])
+        logoutButton = CTkButton(topFrame, text="Logout", font=("Helvetica", 14), command=logoutAndShowMain, width=60, height=36, fg_color=colorPalette["mediumGray"], hover_color=colorPalette["lightGray"])
         logoutButton.place(x=1280 - 60 - 20, y=20)
 
     # Searchbar
-    searchbar = CTkEntry(topFrame, width=500, placeholder_text="Search for a celebrity", border_width=4, corner_radius=18, font=("Arial", 14), height=46, fg_color=colorPalette["darkGray"])
+    searchbar = CTkEntry(topFrame, width=500, placeholder_text="Search for a celebrity", border_width=4, corner_radius=18, font=("Helvetica", 14), height=46, fg_color=colorPalette["darkGray"])
     searchbar.place(relx=0.5, rely=0.5, anchor="center")
     searchbar.bind("<Return>", lambda event: searchCelebrities(searchbar.get().lower(), celebrities, scrollFrame))
     # Magnifying glass icon
@@ -227,18 +248,18 @@ def createMainFrame(filteredCelebrities=None):
     filterLabel = CTkLabel(topFrame, image=filterIcon, text="", cursor="hand2")
     filterLabel.place(relx=0.8, rely=0.5, anchor="center") 
     filterLabel.bind("<Button-1>", lambda event: showFilterFrame()) 
-    #TODO Favourites
+    
     # Favourites icon glass icon
     FavouritesIcon = CTkImage(dark_image=Image.open("src\\Data\\Images\\system\\favourites.png"), size=(30, 30))
     # Create a label with the magnify icon and place it inside the search bar
     if not isinstance(userAccount,accounts.Guest):
         FavouritesLabel = CTkLabel(topFrame, image=FavouritesIcon, text="", cursor="hand2")
         FavouritesLabel.place(relx=0.845, rely=0.5, anchor="center") 
-        FavouritesLabel.bind("<Button-1>", lambda event: print(f"Favourites clicked - {userAccount.get_favourites()}")) 
+        FavouritesLabel.bind("<Button-1>", lambda event: showFavourites(userAccount.get_favourites(), celebrities, scrollFrame)) 
     
     # Add Celebrity
     if userAccount.get_is_admin():
-        addButton = CTkButton(topFrame, text="+", font=("Arial",24), command=lambda: createEditCelebrityFrame("Add"), width=36, height=36, fg_color=colorPalette["darkGray"], hover_color=colorPalette["lightGray"])
+        addButton = CTkButton(topFrame, text="+", font=("Helvetica",24), command=lambda: createEditCelebrityFrame("Add"), width=36, height=36, fg_color=colorPalette["darkGray"], hover_color=colorPalette["lightGray"])
         addButton.place(relx=0.75, rely=0.5, anchor="center")
 
     # Scrollable frame to house list of celebrities
@@ -260,7 +281,7 @@ def removeFavouriteButtonFunc(buttonFrame, buttonInstance, file_path, celeb_name
     userAccount.remove_favourite(file_path, celeb_name)
     buttonInstance.destroy()
     # create a new instance of REMOVE from Favourites button
-    addFavouriteButton = CTkButton(buttonFrame, text="Favourite", width=60)
+    addFavouriteButton = CTkButton(buttonFrame, text="FAVOURITE", font=('Helvetica', 14), width=80, height=26, fg_color=colorPalette["veryDarkGray"], hover_color=colorPalette["mediumGray"])
     addFavouriteButton.configure(command=lambda name=celeb_name, button_instance=addFavouriteButton: addFavouriteButtonFunc(buttonFrame, button_instance, "src\\Data\\accountInfo.csv", name))
     addFavouriteButton.grid(row=0, column=0, pady=5)
 
@@ -269,7 +290,7 @@ def addFavouriteButtonFunc(buttonFrame, buttonInstance, file_path, celeb_name):
     userAccount.add_favourite(file_path, celeb_name)
     buttonInstance.destroy()
     # create a new instance of REMOVE from Favourites button
-    removeFavouriteButton = CTkButton(buttonFrame, text="Un-favourite", width=60)
+    removeFavouriteButton = CTkButton(buttonFrame, text="UN-FAVOURITE", font=('Helvetica', 14), width=80, height=26, fg_color=colorPalette["veryDarkGray"], hover_color=colorPalette["mediumGray"])
     removeFavouriteButton.configure(command=lambda name=celeb_name, button_instance=removeFavouriteButton: removeFavouriteButtonFunc(buttonFrame, button_instance, "src\\Data\\accountInfo.csv", name))
     removeFavouriteButton.grid(row=0, column=0, pady=5)
     
@@ -279,62 +300,83 @@ def createSignInFrame(signInType):
         global userAccount
         username = str(usernameField.get())
         password = str(passwordField.get())
+        # Only get admin code if registering
+        adminCode = str(adminCodeField.get()) if signInType == "Register Account" else None
 
         if signInType == "Login to Account":    
             successfulRegister, newUserAccount, successText = accounts.login(username, password, "src\\Data\\accountInfo.csv")
 
         elif signInType == "Register Account":
-            successfulRegister, newUserAccount, successText = accounts.register_user(username, password, False, "src\\Data\\accountInfo.csv")
+            # If the adminCode is empty, register user without admin privileges
+            if adminCode == "":
+                successfulRegister, newUserAccount, successText = accounts.register_user(username, password, False, "src\\Data\\accountInfo.csv")
+            elif adminCode == "admin123":  # If admin code is correct
+                successfulRegister, newUserAccount, successText = accounts.register_user(username, password, True, "src\\Data\\accountInfo.csv")
+            else:  # If admin code is incorrect
+                successfulRegister = False
+                newUserAccount = None
+                successText = "Incorrect admin code."
         else:
             print("Invalid sign in type")
             
         if successfulRegister:
             userAccount = newUserAccount
-            successLabel = CTkLabel(signInFrame, text=f"Successfuly {successText}\n Redirecting Home", font=("Arial", 18), width=640, text_color="green")
+            # Check if the admin code is correct
+            if adminCode == "admin123": #set for demo purposes
+                userAccount.set_is_admin(True)  # Grant admin rights
+                successText += "\nAdmin permisions enabled!!"
+            else:
+                pass
+
+            successLabel = CTkLabel(signInFrame, text=f"Successfuly {successText}\n Redirecting Home", font=("Helvetica", 18), width=640, text_color="green")
             successLabel.place(relx=0.5, rely=0.3, anchor="center")
             app.after(2000, showMainFrame)
         else:
-            successLabel = CTkLabel(signInFrame, text=successText, font=("Arial", 18), width=640, text_color="red")
+            successLabel = CTkLabel(signInFrame, text=successText, font=("Helvetica", 18), width=640, text_color="red")
             successLabel.place(relx=0.5, rely=0.3, anchor="center")
     
     global signInFrame
     signInFrame = CTkFrame(app, width=1280, height=720)
     signInFrame.place(relx=0.5, rely=0.5, anchor="center")  
 
-    loginLabel = CTkLabel(signInFrame, text=signInType, font=("Arial", 22))
+    loginLabel = CTkLabel(signInFrame, text=signInType, font=("Helvetica", 22))
     loginLabel.place(relx=0.5, rely=0.2, anchor="center")
 
     #Username
-    usernameField = CTkEntry(signInFrame, width=500, placeholder_text="Enter your username...")
+    usernameField = CTkEntry(signInFrame, width=500, placeholder_text="Enter your username...", height=60, font=("Helvetica", 20))
     usernameField.place(relx=0.5, rely=0.5, anchor="center")
     #Password
-    passwordField = CTkEntry(signInFrame, width=500, placeholder_text="Enter your password...", show="*")
+    passwordField = CTkEntry(signInFrame, width=500, placeholder_text="Enter your password...", show="*", height=60, font=("Helvetica", 20))
     passwordField.place(relx=0.5, rely=0.6, anchor="center")
     passwordField.bind("<Return>", lambda event: printToLabel())
+    #Admin Code
+    if signInType == "Register Account":
+        adminCodeField = CTkEntry(signInFrame, width=500, placeholder_text="Enter admin password...", show="*", height=60, font=("Helvetica", 20))
+        adminCodeField.place(relx=0.5, rely=0.7, anchor="center")
     #Submit
-    submitButton = CTkButton(signInFrame, text=signInType, command=printToLabel, width=80, font=("Arial", 16), fg_color=colorPalette["darkGray"], hover_color=colorPalette["lightGray"])
+    submitButton = CTkButton(signInFrame, text=signInType, command=printToLabel, width=80, font=("Helvetica", 16), fg_color=colorPalette["darkGray"], hover_color=colorPalette["lightGray"])
     submitButton.place(relx=0.5, rely=0.8, anchor="center")
 
     #go back to main menu
-    backButton = CTkButton(signInFrame, text="home", command=showMainFrame, width=60, font=("Arial", 16), fg_color=colorPalette["darkGray"], hover_color=colorPalette["lightGray"])
+    backButton = CTkButton(signInFrame, text="HOME", command=showMainFrame, width=60, font=("Helvetica", 16), fg_color=colorPalette["darkGray"], hover_color=colorPalette["lightGray"])
     backButton.place(relx=0.05, rely=0.05, anchor="center")
 
 # Create the edit celebrity frame
 def createEditCelebrityFrame(editType, originalFirstName=None, originalLastName=None):
-    #global localImagePath
-    # def getImagePath():
-    #     global localImagePath
-    #     filePath = filedialog.askopenfilename(title="Select an Image", filetypes=[("Image Files", "*.jpg;*.jpeg;*.png;")])
-    #     filePathLabel = CTkLabel(editCelebrityFrame, text=f"Image: {filePath}", font=("Arial", 16))
-    #     filePathLabel.place(x=120, y=595)
-    #     celebrityName = firstNameField.get() + "_" + lastNameField.get()
-    #     localImagePath = functions.copy_image_to_folder(filePath, celebrityName)
+    global localImagePath
+    def getImagePath():
+        global localImagePath
+        filePath = filedialog.askopenfilename(title="Select an Image", filetypes=[("Image Files", "*.jpg;*.jpeg;*.png;")])
+        filePathLabel = CTkLabel(editCelebrityFrame, text=f"Image: {filePath[:35]}", font=("Helvetica", 14))
+        filePathLabel.place(x=240, y=390)
+        celebrityName = firstNameField.get() + "_" + lastNameField.get()
+        localImagePath = functions.copy_image_to_folder(filePath, celebrityName)
     
     def editCelebrity():
         firstName = firstNameField.get()
         lastName = lastNameField.get()
         dateOfBirth = dateOfBirthField.get()
-        #imagePath = localImagePath
+        imagePath = localImagePath
         dateOfDeath = dateOfDeathField.get()
         industry = industryField.get()
         associations = associationsField.get() 
@@ -356,7 +398,7 @@ def createEditCelebrityFrame(editType, originalFirstName=None, originalLastName=
         if editType == "Add":
             # Check if the required fields are filled
             if not firstNameField.get().strip() or not lastNameField.get().strip() or not industryField.get().strip():
-                errorMessage  = CTkLabel(editCelebrityFrame, text="Please make sure First Name, Last Name, and Industry are filled", font=("Arial", 16), text_color="red")
+                errorMessage  = CTkLabel(editCelebrityFrame, text="Please make sure First Name, Last Name, and Industry are filled", font=("Helvetica", 16), text_color="red")
                 errorMessage.place(relx=0.5, rely=0.75, anchor="center")
                 app.after(2000, lambda: errorMessage.destroy())
                 return
@@ -366,7 +408,7 @@ def createEditCelebrityFrame(editType, originalFirstName=None, originalLastName=
                 "first_name": firstName,
                 "last_name": lastName,
                 "date_of_birth": dateOfBirth,
-                #"images_path": imagePath,
+                "images_path": imagePath,
                 "date_of_death" : dateOfDeath,
                 "biography" : biography,
                 "achievements" : achievements,
@@ -387,7 +429,7 @@ def createEditCelebrityFrame(editType, originalFirstName=None, originalLastName=
             functions.add_data("src/Data/celebrities.csv", celebrityData)
 
             # Show success message
-            successMessage = CTkLabel(editCelebrityFrame, text=f"Successfully added {firstName} {lastName}!", font=("Arial", 16), text_color="green")
+            successMessage = CTkLabel(editCelebrityFrame, text=f"Successfully added {firstName} {lastName}!", font=("Helvetica", 16), text_color="green")
             successMessage.place(relx=0.5, rely=0.75, anchor="center")
             app.after(2000, showMainFrame)
 
@@ -398,7 +440,7 @@ def createEditCelebrityFrame(editType, originalFirstName=None, originalLastName=
             celeb = next((c for c in celebrities if c.get("first_name") == originalFirstName and c.get("last_name") == originalLastName), None)
 
             if not celeb:
-                errorLabel = CTkLabel(editCelebrityFrame, text="Celebrity not found.", font=("Arial", 16), text_color="red")
+                errorLabel = CTkLabel(editCelebrityFrame, text="Celebrity not found.", font=("Helvetica", 16), text_color="red")
                 errorLabel.place(relx=0.5, rely=0.75, anchor="center")
                 return
 
@@ -438,7 +480,7 @@ def createEditCelebrityFrame(editType, originalFirstName=None, originalLastName=
             if netWorth:  # Update net worth
                 functions.edit_data("src/Data/celebrities.csv", "first_name", originalFirstName, "net_worth", netWorth)
 
-            successLabel = CTkLabel(editCelebrityFrame, text=f"Successfully edited {firstName} {lastName}!", font=("Arial", 16), text_color="green")
+            successLabel = CTkLabel(editCelebrityFrame, text=f"Successfully edited {firstName} {lastName}!", font=("Helvetica", 16), text_color="green")
             successLabel.place(relx=0.5, rely=0.75, anchor="center")
             app.after(2000, showMainFrame)
 
@@ -463,7 +505,7 @@ def createEditCelebrityFrame(editType, originalFirstName=None, originalLastName=
     editCelebrityFrame.place(relx=0.5, rely=0.5, anchor="center")
     
     # Add a label to inform the user of the action
-    editLabel = CTkLabel(editCelebrityFrame, text=f"Please fill in the details to {editType} a celebrity", font=("Arial", 22))
+    editLabel = CTkLabel(editCelebrityFrame, text=f"Please fill in the details to {editType} a celebrity", font=("Helvetica", 22))
     editLabel.place(relx=0.5, rely=0.1, anchor="center")
 
     # Left Side Fields
@@ -474,7 +516,12 @@ def createEditCelebrityFrame(editType, originalFirstName=None, originalLastName=
     industryField = createLabelAndField("Industry:", 20, 270)
     associationsField = createLabelAndField("Associations:", 20, 310)
     genderDropdown = createLabelAndField("Gender:", 20, 350, fieldType="combo", options=["Male", "Female", "Other"])
-    biographyTextbox = createLabelAndField("Biography:", 20, 390, fieldType="text")
+    #image
+    imageLabel = CTkLabel(editCelebrityFrame, text="Image: ", font=("Helvetica", 14))
+    imageLabel.place(x=20, y=390)
+    imageButton = CTkButton(editCelebrityFrame, text="Select Image", command=getImagePath, width=100, font=("Helvetica", 14), fg_color=colorPalette["darkGray"], hover_color=colorPalette["lightGray"])
+    imageButton.place(x=140, y=390)
+    biographyTextbox = createLabelAndField("Biography:", 20, 430, fieldType="text")
 
     # Right Side Fields
     netWorthField = createLabelAndField("Net Worth:", 620, 110)
@@ -511,11 +558,11 @@ def createEditCelebrityFrame(editType, originalFirstName=None, originalLastName=
             achievementsTextbox.insert("1.0", celeb.get("achievements", ""))
 
     # Submit button to add celebrity
-    submitButton = CTkButton(editCelebrityFrame, text="Add Celebrity" if editType == "Add" else "Edit Celebrity", command=editCelebrity, width=100, font=("Arial", 16), fg_color=colorPalette["darkGray"], hover_color=colorPalette["lightGray"])
+    submitButton = CTkButton(editCelebrityFrame, text="Add Celebrity" if editType == "Add" else "Edit Celebrity", command=editCelebrity, width=100, font=("Helvetica", 16), fg_color=colorPalette["darkGray"], hover_color=colorPalette["lightGray"])
     submitButton.place(relx=0.5, rely=0.9, anchor="center")
 
     # Go back to main menu
-    backButton = CTkButton(editCelebrityFrame, text="Home", command=showMainFrame, width=60, font=("Arial", 16), fg_color=colorPalette["darkGray"], hover_color=colorPalette["lightGray"])
+    backButton = CTkButton(editCelebrityFrame, text="HOME", command=showMainFrame, width=60, font=("Helvetica", 16), fg_color=colorPalette["darkGray"], hover_color=colorPalette["lightGray"])
     backButton.place(relx=0.05, rely=0.05, anchor="center")
 
 def createCelebrityFrame(celebrity=None):
@@ -523,44 +570,76 @@ def createCelebrityFrame(celebrity=None):
     celebrityFrame = CTkFrame(app, width=1280, height=720)
     celebrityFrame.pack(fill="both", expand=True)
 
+    # Top frame for the back button and celebrity Name
+    headerFrame = CTkFrame(celebrityFrame, width=1280, height=100, fg_color=colorPalette["darkGray"])
+    headerFrame.pack(fill="x", side="top")
+
+    # Add a Back button to return to the main view
+    backButton = CTkButton(headerFrame, text="BACK", font=("Helvetica", 16), command=showMainFrame, fg_color=colorPalette["veryDarkGray"], hover_color=colorPalette["lightGray"])
+    backButton.place(relx=0.05, rely=0.5, anchor="w")
+
     # Display celebrity's full name
-    celebrityLabel = CTkLabel(celebrityFrame, text=f"{celebrity['first_name']} {celebrity['last_name']}", font=("Helvetica", 30))
-    celebrityLabel.place(relx=0.5, rely=0.05, anchor="center")
+    celebrityLabel = CTkLabel(headerFrame, text=f"{celebrity['first_name']} {celebrity['last_name']}", font=("Helvetica", 30))
+    celebrityLabel.place(relx=0.5, rely=0.5, anchor="center")
 
-    # List of attributes to display (label text, corresponding dictionary key, initial rely position)
+    # scrollable frame for celebrity details
+    scrollFrame = CTkScrollableFrame(celebrityFrame, width=1280, height=620, fg_color=colorPalette["mediumGray"])
+    scrollFrame.pack(fill="both", expand=True)
+
+    # Wrapper to hold image + columns
+    topContentFrame = CTkFrame(scrollFrame, fg_color=colorPalette["mediumGray"])
+    topContentFrame.pack(fill="x", padx=20, pady=20)
+
+    # Image
+    try:
+        celebrityImage = Image.open(celebrity["images_path"])
+        celebrityImage = ImageOps.fit(celebrityImage, (300, 300), centering=(0.5, 0.5))
+        celebrityImage = CTkImage(dark_image=celebrityImage, size=(300, 300))
+    except Exception:
+        celebrityImage = CTkImage(dark_image=Image.open("src/Data/Images/user/user_100.png"), size=(300, 300))
+
+    CTkLabel(topContentFrame, image=celebrityImage, text="").pack(side="left", padx=10, pady=10)
+
+    # Columns container
+    columnsFrame = CTkFrame(topContentFrame, fg_color=colorPalette["mediumGray"])
+    columnsFrame.pack(side="left", fill="both", expand=True, padx=20)
+
+    leftColumn = CTkFrame(columnsFrame, fg_color=colorPalette["mediumGray"])
+    leftColumn.pack(side="left", anchor="n", padx=10, pady=10)
+
+    rightColumn = CTkFrame(columnsFrame, fg_color=colorPalette["mediumGray"])
+    rightColumn.pack(side="left", anchor="n", padx=10, pady=10)
+
+    # Left Column Info
     info = [
-        ("Biography", 'biography', 0.150),
-        ("Achievements", 'achievements', 0.35),
-        ("Net Worth", 'net_worth', 0.45),
-        ("Industry", 'industry', 0.55),
-        ("Family", 'family', 0.65),
-        ("Associations", 'associations', 0.75),
-        ("Controversies", 'controversies', 0.85),
+        ("Achievements", 'achievements'),
+        ("Net Worth", 'net_worth'),
+        ("Industry", 'industry'),
+        ("Family", 'family'),
+        ("Associations", 'associations'),
+        ("Controversies", 'controversies'),
     ]
-    
-    # Loop through the information to create labels and text for each section
-    for label_text, key, rely in info:
-        CTkLabel(celebrityFrame, text=f"{label_text}:", font=("Helvetica", 18)).place(relx=0.05, rely=rely, anchor="w")
-        CTkLabel(celebrityFrame, text=celebrity[key], font=("Helvetica", 14), wraplength=1200, justify="left").place(relx=0.05, rely=rely+0.05, anchor="w")
+    for label_text, key in info:
+        CTkLabel(leftColumn, text=f"{label_text}:", font=("Helvetica", 18)).pack(anchor="w", pady=(10, 0))
+        CTkLabel(leftColumn, text=celebrity.get(key, ""), font=("Helvetica", 14), wraplength=400, justify="left").pack(anchor="w")
 
-    # Filmography, Discography, Genres, Influence, Political Orientation, Gender
+    # Right Column Media Info
     media_info = [
-        ("Filmography", 'filmography', 0.35),
-        ("Discography", 'discography', 0.45),
-        ("Genres", 'genres', 0.55),
-        ("Influence", 'influence', 0.65),
-        ("Political Orientation", 'political_orientation', 0.75),
-        ("Gender", 'gender', 0.85),
+        ("Filmography", 'filmography'),
+        ("Discography", 'discography'),
+        ("Genres", 'genres'),
+        ("Influence", 'influence'),
+        ("Political Orientation", 'political_orientation'),
+        ("Gender", 'gender'),
     ]
+    for label_text, key in media_info:
+        CTkLabel(rightColumn, text=f"{label_text}:", font=("Helvetica", 18)).pack(anchor="w", pady=(10, 0))
+        CTkLabel(rightColumn, text=celebrity.get(key, ""), font=("Helvetica", 14), wraplength=400, justify="left").pack(anchor="w")
 
-    for label_text, key, rely in media_info:
-        CTkLabel(celebrityFrame, text=f"{label_text}:", font=("Helvetica", 18)).place(relx=0.5, rely=rely, anchor="w")
-        CTkLabel(celebrityFrame, text=celebrity[key], font=("Helvetica", 14), wraplength=600, justify="left").place(relx=0.5, rely=rely+0.05, anchor="w")
-
-    # Add a "Back" button to return to the main view
-    backButton = CTkButton(celebrityFrame, text="Back", font=("Arial", 16), command=showMainFrame, fg_color=colorPalette["darkGray"], hover_color=colorPalette["lightGray"])
-    backButton.place(relx=0.05, rely=0.05, anchor="w")
-
+    # Biography (bottom full-width)
+    CTkLabel(scrollFrame, text="Biography:", font=("Helvetica", 22)).pack(anchor="w", pady=(20, 0), padx=20)
+    CTkLabel(scrollFrame, text=celebrity.get("biography", ""), font=("Helvetica", 18), wraplength=1200, justify="left").pack(anchor="w", padx=20, pady=(0, 20))
+    
 def createFilterFrame():
     # Create a dictionary of fields with StringVar for each filter.
     fields = {
@@ -583,40 +662,93 @@ def createFilterFrame():
         "net_worth": StringVar()
     }
 
+    checkbox_vars = {field: StringVar(value="off") for field in fields}
+    entry_vars = {field: StringVar() for field in fields}
+
     # check which filters are enabled and add celebs
     def filterCelebrities():
         import pandas as pd
-        selected_filters = {key for key, var in fields.items() if var.get() == "on"}
-        print("Selected Filters:", selected_filters)
-
-        # Load all celebrity data
-        celebrities = functions.load_celebrities_file("src/Data/celebrities.csv")
-
-        # Apply filters to check if fields are non-empty and not NaN
-        filteredCelebrities = [celeb for celeb in celebrities if all(pd.notna(celeb.get(key)) and str(celeb[key]).strip() for key in selected_filters)]
-
-        print(f"Filtered Celebrities: {len(filteredCelebrities)} found")
-        return filteredCelebrities
-
+        # Load the CSV file as a DataFrame.
+        df = pd.read_csv("src/Data/celebrities.csv")
+        
+        # For each field that is enabled (checkbox on):
+        for field in fields:
+            if checkbox_vars[field].get() == "on":
+                search_text = entry_vars[field].get().strip()
+                if search_text:
+                    if field == "gender":
+                        df = df[df[field].str.lower() == search_text.lower()]  # Exact match for gender
+                    else:
+                        # For other fields, retain substring match (case insensitive)
+                        df = df[df[field].fillna("").str.contains(search_text, case=False)]
+                else:
+                    # If the entry is empty, only keep rows where this field is not empty
+                    df = df[df[field].fillna("").str.strip() != ""]
+        
+        # Convert the resulting DataFrame back to a list of dictionaries
+        # so that createCelebrityRow can process it.
+        filtered_celebrities = df.to_dict("records")
+        print(f"Filtered Celebrities: {len(filtered_celebrities)} found")
+        return filtered_celebrities
+    
     def checkbox_event(var, label):
         print(f"Checkbox for {label} toggled, current value:", var.get())
-    
-    #TODO make a CTkEntry for each checkbox!
+
     global filterFrame
     filterFrame = CTkFrame(app, width=1280, height=720)
     filterFrame.pack(fill="both", expand=True)
     
-    # Loop through the dictionary to create a checkbox for each item
-    for idx, (label, var) in enumerate(fields.items()):
-        checkbox = CTkCheckBox(filterFrame, text=label.replace("_", " ").title(), command=lambda var=var, label=label: checkbox_event(var, label), variable=var, onvalue="on", offvalue="off")
-        checkbox.place(x=200, y=50 + idx * 40, anchor="w")
-    # Add a "Back" button to return to the main view
-    backButton = CTkButton(filterFrame, text="Home", font=("Arial", 16), command=showMainFrame, fg_color=colorPalette["darkGray"], hover_color=colorPalette["lightGray"])
-    backButton.place(relx=0.05, rely=0.05, anchor="center")
+    # select filter options label
+    filterLabel = CTkLabel(filterFrame, text="Select Filter Options:", font=("Helvetica", 20))
+    filterLabel.place(relx=0.5, rely=0.05, anchor="center")
 
-    # Submit button to add celebrity
-    submitButton = CTkButton(filterFrame, text="Filter Search", command=lambda: showMainFrame(filterCelebrities()), width=100, font=("Arial", 16), fg_color=colorPalette["darkGray"], hover_color=colorPalette["lightGray"])
-    submitButton.place(relx=0.8, rely=0.5, anchor="center")
+    # Split fields into two columns
+    leftFields = [
+        "first_name", "last_name", "date_of_birth", "date_of_death", "achievements",
+        "industry", "family", "associations"
+    ]
+    rightFields = [
+        "controversies", "discography", "filmography", "genres", "influence", 
+        "political_orientation", "gender", "net_worth", "biography"
+    ]
+
+    # LEFT SIDE: for each field, create a checkbox and an entry next to it.
+    for idx, field in enumerate(leftFields):
+        checkbox = CTkCheckBox(
+            filterFrame, 
+            text=field.replace("_", " ").title(), 
+            variable=checkbox_vars[field], 
+            onvalue="on", 
+            offvalue="off", 
+            command=lambda var=checkbox_vars[field], label=field: checkbox_event(var, label)
+        )
+        checkbox.place(x=200, y=90 + idx * 40, anchor="w")
+
+        entry = CTkEntry(filterFrame, width=200, textvariable=entry_vars[field], placeholder_text="Search...")
+        entry.place(x=400, y=90 + idx * 40, anchor="w")
+    
+    # RIGHT SIDE: for each field, create a checkbox and an entry next to it.
+    for idx, field in enumerate(rightFields):
+        checkbox = CTkCheckBox(
+            filterFrame, 
+            text=field.replace("_", " ").title(), 
+            variable=checkbox_vars[field], 
+            onvalue="on", 
+            offvalue="off", 
+            command=lambda var=checkbox_vars[field], label=field: checkbox_event(var, label)
+        )
+        checkbox.place(x=650, y=90 + idx * 40, anchor="w")
+
+        entry = CTkEntry(filterFrame, width=200, textvariable=entry_vars[field], placeholder_text="Search...")
+        entry.place(x=850, y=90 + idx * 40, anchor="w")
+    
+    # "Home" button to go back to the main view
+    backButton = CTkButton(filterFrame, text="HOME", font=("Helvetica", 16), command=showMainFrame, fg_color=colorPalette["darkGray"], hover_color=colorPalette["lightGray"], width=60)
+    backButton.place(relx=0.05, rely=0.05, anchor="center")
+    
+    # "Filter Search" button to apply the filters
+    submitButton = CTkButton(filterFrame, text="Search With Filter Terms", command=lambda: showMainFrame(filterCelebrities()), width=100, font=("Helvetica", 18), fg_color=colorPalette["darkGray"], hover_color=colorPalette["lightGray"])
+    submitButton.place(relx=0.5, rely=0.8, anchor="center")
 
 createMainFrame()
 
