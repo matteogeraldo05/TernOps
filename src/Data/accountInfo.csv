@@ -1,4 +1,5 @@
-user_name,password,is_admin,favourites
-ryan,123,True,"Leonardo,Bill,Johnny,Mark,Albert,Steve,Usain,Will,Barack"
-Tsanger22,Password,False,Albert
-tomasz,abc123,True,"Kanye,Katy,Kevin"
+ryan,123,True,
+Tsanger22,Password,False,
+matteo,123,True,
+matteo1,123,False,
+matteo2,123,True,"Jim Carrey,Johnny Depp,Kanye West"
