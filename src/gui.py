@@ -779,6 +779,6 @@ def createFilterFrame():
 
 # Create the main frame
 createMainFrame()
-
+# Display the main frame to the user
 showMainFrame()
 app.mainloop()
