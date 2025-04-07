@@ -3,11 +3,10 @@ from CTkMessagebox import CTkMessagebox
 from PIL import Image, ImageOps
 import accounts
 import functions
-import pytest
 
 app = CTk()
 app.title("TERNOPS - Celebrity Bio Application")
-app.iconbitmap("src\\Data\\Images\\system\\ternops.ico")
+app.iconbitmap("src/Data/Images/system/ternops.ico")
 app.geometry("1280x720")
 app.resizable(False, False)
 app._set_appearance_mode("dark")
@@ -68,23 +67,27 @@ def showFilterFrame():
     hideAllFrames()
     createFilterFrame()
 
-#------------------------------------------FUNCTIONS TO BE MOVED------------------------------------------------
+# Helper Functions
+# ask for confirmation and then remove celebrity from the list 
 def removeCelebrity(firstName, lastName):
         deleteCeleb = CTkMessagebox(message=f"Are you sure you would like to delete {firstName} {lastName}? This action is permenant.", icon="warning", option_1="Yes", option_2="No")
+        #if user selects yes, remove celebrity from the list
         if deleteCeleb.get() == "Yes":
-            functions.delete_data("src\\Data\\celebrities.csv", firstName, lastName)
+            functions.delete_data("src/Data/celebrities.csv", firstName, lastName)
             showMainFrame()
         else:
             pass
 
+# function to create the celebrity rows in the main frame
 def createCelebrityRow(celebrities, scrollFrame):
     global userAccount
-    # Clear the previous celebrity list
+    # Clear the previous celebrity list by destroying all widgets in the scrollFrame
     for widget in scrollFrame.winfo_children():
         widget.destroy()
 
-    # Create a row for each celebrity in the CSV file
+    # for each celebrity in the CSV file
     for celebrity in celebrities:
+        #details from each celebrity
         firstName = celebrity["first_name"]
         lastName = celebrity["last_name"]
         dateOfBirth = celebrity["date_of_birth"]
@@ -93,7 +96,7 @@ def createCelebrityRow(celebrities, scrollFrame):
         biography = str(celebrity["biography"])
         image = celebrity["images_path"]
 
-        # Create a a breif bio
+        # Create a a breif bio by cutting off the biography at 400 characters   
         brief_bio = biography[:400] + "..."
 
         # Create the row using the celebrity data
@@ -101,12 +104,14 @@ def createCelebrityRow(celebrities, scrollFrame):
         rowFrame.pack(fill="x", pady=5)
 
         try:
+            #try loading the celeberity image
             celebrityImage = Image.open(image)
             celebrityImage = ImageOps.fit(celebrityImage, (150, 150), method=0, bleed=0.0, centering=(0.5, 0.5))
             celebrityImage = CTkImage(dark_image=celebrityImage, size=(150, 150))
             celebrityLabel = CTkLabel(rowFrame, image=celebrityImage, text="")
             celebrityLabel.pack(side="left", padx=10, pady=10)
         except Exception as e:
+            # if the image is not found, use the default image
             celebrityImage = CTkImage(dark_image=Image.open("src/Data/Images/user/user_100.png"), size=(150, 150))
             celebrityLabel = CTkLabel(rowFrame, image=celebrityImage, text="")
             celebrityLabel.pack(side="left", padx=10, pady=10)
@@ -130,23 +135,26 @@ def createCelebrityRow(celebrities, scrollFrame):
         buttonFrame.pack(side="right", padx=5, pady=10)
 
         fullName = f"{firstName} {lastName}"
+        # Check if the user is a guest account
         if not isinstance(userAccount, accounts.Guest):
+            # if the user is not a guest account, check if the full name is in the favourites list
             if fullName not in userAccount.get_favourites():  # Check if the full name is in the favourites list
                 # Favorite button
                 favoriteButton = CTkButton(buttonFrame, text="FAVOURITE", font=('Helvetica', 14), width=80, height=26, fg_color=colorPalette["veryDarkGray"], hover_color=colorPalette["mediumGray"])
-                favoriteButton.configure(command=lambda name=fullName, button_instance=favoriteButton, button_frame_instance=buttonFrame: addFavouriteButtonFunc(button_frame_instance, button_instance, "src\\Data\\accountInfo.csv", name))
+                favoriteButton.configure(command=lambda name=fullName, button_instance=favoriteButton, button_frame_instance=buttonFrame: addFavouriteButtonFunc(button_frame_instance, button_instance, "src/Data/accountInfo.csv", name))
                 favoriteButton.grid(row=0, column=0, pady=5)
             
             else:  # If the full name is in the favourites list
                 # REMOVE from Favourites button
                 removeFavouriteButton = CTkButton(buttonFrame, text="UN-FAVOURITE", font=('Helvetica', 14), width=80, height=26, fg_color=colorPalette["veryDarkGray"], hover_color=colorPalette["mediumGray"])
-                removeFavouriteButton.configure(command=lambda name=fullName, button_instance=removeFavouriteButton, button_frame_instance=buttonFrame: removeFavouriteButtonFunc(button_frame_instance, button_instance, "src\\Data\\accountInfo.csv", name))
+                removeFavouriteButton.configure(command=lambda name=fullName, button_instance=removeFavouriteButton, button_frame_instance=buttonFrame: removeFavouriteButtonFunc(button_frame_instance, button_instance, "src/Data/accountInfo.csv", name))
                 removeFavouriteButton.grid(row=0, column=0, pady=5)
 
         # Learn more button
         LearnMoreButton = CTkButton(buttonFrame, text="LEARN MORE", font=('Helvetica', 14), command=lambda celeb=celebrity: showCelebrityFrame(celeb), width=80, height=26, fg_color=colorPalette["veryDarkGray"], hover_color=colorPalette["mediumGray"])
         LearnMoreButton.grid(row=1, column=0, pady=5)
 
+        # if the user is admin show them the edit and remove buttons
         if userAccount.get_is_admin():
             # Edit button
             editButton = CTkButton(buttonFrame, text="EDIT", font=('Helvetica', 14), command=lambda celeb=celebrity: createEditCelebrityFrame("Edit", celeb["first_name"], celeb["last_name"]), width=80, height=26, fg_color=colorPalette["veryDarkGray"], hover_color=colorPalette["mediumGray"])
@@ -158,9 +166,12 @@ def createCelebrityRow(celebrities, scrollFrame):
         # Bio
         bioLabel = CTkLabel(rowFrame, text=brief_bio, font=("Helvetica", 16), wraplength=650, justify="left")
         bioLabel.pack(side="right", padx=30, pady=10)
-#------------------------------------------FUNCTIONS TO BE MOVED------------------------------------------------
 
-# Create the main frame
+'''
+Displays the main interface of the app, with options to navigate 
+to different sections like adding/editing celebrities, filtering 
+celebrities, and viewing their profiles.
+'''
 def createMainFrame(filteredCelebrities=None):
     def logoutAndShowMain():
         global userAccount
@@ -207,9 +218,9 @@ def createMainFrame(filteredCelebrities=None):
     topFrame.pack(fill="x", side="top")
 
     if not isinstance(userAccount,accounts.Guest):
-        profilePicture = CTkImage(dark_image=Image.open("src\\Data\\Images\\user\\admin_100.png"), size=(30,30))
+        profilePicture = CTkImage(dark_image=Image.open("src/Data/Images/user/admin_100.png"), size=(30,30))
     else:
-        profilePicture = CTkImage(dark_image=Image.open("src\\Data\\Images\\user\\user.png"), size=(30,30))
+        profilePicture = CTkImage(dark_image=Image.open("src/Data/Images/user/user.png"), size=(30,30))
     profilePictureLabel = CTkLabel(topFrame, image=profilePicture, text="")
     profilePictureLabel.place(x=20, y=20)
     #User info
@@ -235,22 +246,21 @@ def createMainFrame(filteredCelebrities=None):
     searchbar.place(relx=0.5, rely=0.5, anchor="center")
     searchbar.bind("<Return>", lambda event: searchCelebrities(searchbar.get().lower(), celebrities, scrollFrame))
     # Magnifying glass icon
-    magnifyIcon = CTkImage(dark_image=Image.open("src\\Data\\Images\\system\\magnify.png"), size=(30, 30))
+    magnifyIcon = CTkImage(dark_image=Image.open("src/Data/Images/system/magnify.png"), size=(30, 30))
     # Create a label with the magnify icon and place it inside the search bar
     magnifyLabel = CTkLabel(topFrame, image=magnifyIcon, text="", cursor="hand2")
     magnifyLabel.place(relx=0.715, rely=0.5, anchor="center") 
     magnifyLabel.bind("<Button-1>", lambda event: searchCelebrities(searchbar.get().lower(), celebrities, scrollFrame))
 
-    #TODO Filter
     # Filter icon glass icon
-    filterIcon = CTkImage(dark_image=Image.open("src\\Data\\Images\\system\\filter.png"), size=(30, 30))
+    filterIcon = CTkImage(dark_image=Image.open("src/Data/Images/system/filter.png"), size=(30, 30))
     # Create a label with the magnify icon and place it inside the search bar
     filterLabel = CTkLabel(topFrame, image=filterIcon, text="", cursor="hand2")
     filterLabel.place(relx=0.8, rely=0.5, anchor="center") 
     filterLabel.bind("<Button-1>", lambda event: showFilterFrame()) 
     
     # Favourites icon glass icon
-    FavouritesIcon = CTkImage(dark_image=Image.open("src\\Data\\Images\\system\\favourites.png"), size=(30, 30))
+    FavouritesIcon = CTkImage(dark_image=Image.open("src/Data/Images/system/favourites.png"), size=(30, 30))
     # Create a label with the magnify icon and place it inside the search bar
     if not isinstance(userAccount,accounts.Guest):
         FavouritesLabel = CTkLabel(topFrame, image=FavouritesIcon, text="", cursor="hand2")
@@ -282,7 +292,7 @@ def removeFavouriteButtonFunc(buttonFrame, buttonInstance, file_path, celeb_name
     buttonInstance.destroy()
     # create a new instance of REMOVE from Favourites button
     addFavouriteButton = CTkButton(buttonFrame, text="FAVOURITE", font=('Helvetica', 14), width=80, height=26, fg_color=colorPalette["veryDarkGray"], hover_color=colorPalette["mediumGray"])
-    addFavouriteButton.configure(command=lambda name=celeb_name, button_instance=addFavouriteButton: addFavouriteButtonFunc(buttonFrame, button_instance, "src\\Data\\accountInfo.csv", name))
+    addFavouriteButton.configure(command=lambda name=celeb_name, button_instance=addFavouriteButton: addFavouriteButtonFunc(buttonFrame, button_instance, "src/Data/accountInfo.csv", name))
     addFavouriteButton.grid(row=0, column=0, pady=5)
 
 # adds favourite celebrity and then destroys the instance of the button as well as creating a new instance of the opposite button
@@ -291,7 +301,7 @@ def addFavouriteButtonFunc(buttonFrame, buttonInstance, file_path, celeb_name):
     buttonInstance.destroy()
     # create a new instance of REMOVE from Favourites button
     removeFavouriteButton = CTkButton(buttonFrame, text="UN-FAVOURITE", font=('Helvetica', 14), width=80, height=26, fg_color=colorPalette["veryDarkGray"], hover_color=colorPalette["mediumGray"])
-    removeFavouriteButton.configure(command=lambda name=celeb_name, button_instance=removeFavouriteButton: removeFavouriteButtonFunc(buttonFrame, button_instance, "src\\Data\\accountInfo.csv", name))
+    removeFavouriteButton.configure(command=lambda name=celeb_name, button_instance=removeFavouriteButton: removeFavouriteButtonFunc(buttonFrame, button_instance, "src/Data/accountInfo.csv", name))
     removeFavouriteButton.grid(row=0, column=0, pady=5)
     
 # Create the sign in frame
@@ -304,14 +314,14 @@ def createSignInFrame(signInType):
         adminCode = str(adminCodeField.get()) if signInType == "Register Account" else None
 
         if signInType == "Login to Account":    
-            successfulRegister, newUserAccount, successText = accounts.login(username, password, "src\\Data\\accountInfo.csv")
+            successfulRegister, newUserAccount, successText = accounts.login(username, password, "src/Data/accountInfo.csv")
 
         elif signInType == "Register Account":
             # If the adminCode is empty, register user without admin privileges
             if adminCode == "":
-                successfulRegister, newUserAccount, successText = accounts.register_user(username, password, False, "src\\Data\\accountInfo.csv")
+                successfulRegister, newUserAccount, successText = accounts.register_user(username, password, False, "src/Data/accountInfo.csv")
             elif adminCode == "admin123":  # If admin code is correct
-                successfulRegister, newUserAccount, successText = accounts.register_user(username, password, True, "src\\Data\\accountInfo.csv")
+                successfulRegister, newUserAccount, successText = accounts.register_user(username, password, True, "src/Data/accountInfo.csv")
             else:  # If admin code is incorrect
                 successfulRegister = False
                 newUserAccount = None
@@ -361,7 +371,11 @@ def createSignInFrame(signInType):
     backButton = CTkButton(signInFrame, text="HOME", command=showMainFrame, width=60, font=("Helvetica", 16), fg_color=colorPalette["darkGray"], hover_color=colorPalette["lightGray"])
     backButton.place(relx=0.05, rely=0.05, anchor="center")
 
-# Create the edit celebrity frame
+'''
+Used for adding a new celebrity or editing an existing one. There are checks
+for required fields (first name, last name, and industry!) 
+and functionality to upload an image associated with the celebrity.
+Once the form is submitted, it adds or updates the celebrity information in the CSV file.'''
 def createEditCelebrityFrame(editType, originalFirstName=None, originalLastName=None):
     global localImagePath
     localImagePath = None
@@ -574,6 +588,7 @@ def createEditCelebrityFrame(editType, originalFirstName=None, originalLastName=
     backButton = CTkButton(editCelebrityFrame, text="HOME", command=showMainFrame, width=60, font=("Helvetica", 16), fg_color=colorPalette["darkGray"], hover_color=colorPalette["lightGray"])
     backButton.place(relx=0.05, rely=0.05, anchor="center")
 
+'''Displays detailed information about a celebrity (achievements, net worth, family, bio, etc.)'''
 def createCelebrityFrame(celebrity=None):
     global celebrityFrame
     celebrityFrame = CTkFrame(app, width=1280, height=720)
@@ -649,6 +664,9 @@ def createCelebrityFrame(celebrity=None):
     CTkLabel(scrollFrame, text="Biography:", font=("Helvetica", 22)).pack(anchor="w", pady=(20, 0), padx=20)
     CTkLabel(scrollFrame, text=celebrity.get("biography", ""), font=("Helvetica", 18), wraplength=1200, justify="left").pack(anchor="w", padx=20, pady=(0, 20))
     
+'''Allows users to filter the list of celebrities based on various attributes.
+The filter allows searching by columns in the csv.
+Results are shown after applying the selected filter criteria.'''    
 def createFilterFrame():
     # Create a dictionary of fields with StringVar for each filter.
     fields = {
@@ -759,6 +777,7 @@ def createFilterFrame():
     submitButton = CTkButton(filterFrame, text="Search With Filter Terms", command=lambda: showMainFrame(filterCelebrities()), width=100, font=("Helvetica", 18), fg_color=colorPalette["darkGray"], hover_color=colorPalette["lightGray"])
     submitButton.place(relx=0.5, rely=0.8, anchor="center")
 
+# Create the main frame
 createMainFrame()
 
 showMainFrame()
